@@ -16,7 +16,7 @@ import asyncio
 from luduvo import Client
 
 client = Client()
-async def main ():
+async def main():
     user await client.get_user(1)
     print(user.username) # > Luduvo
 
