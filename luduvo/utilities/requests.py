@@ -52,8 +52,8 @@ class Requests:
         else:
             self.session = session
 
-        #self.session.headers["User-Agent"] = "Python/luduvo-api-wrapper"
-        #self.session.headers["Referer"] = "luduvo.com"
+        # self.session.headers["User-Agent"] = "Python/luduvo-api-wrapper"
+        # self.session.headers["Referer"] = "luduvo.com"
 
     async def request(self, method: str, *args, **kwargs) -> Response:
         """
