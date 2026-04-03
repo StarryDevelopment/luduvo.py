@@ -18,5 +18,10 @@ dependencies = ["httpx>=0.24"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent"
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
 ]
+
+[project.urls]
+Source = "https://github.com/StarryDevelopment/luduvo-api-wrapper"
+Issues = "https://github.com/StarryDevelopment/luduvo-api-wrapper/issues"
