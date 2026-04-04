@@ -1,5 +1,7 @@
 <img src="https://raw.githubusercontent.com/StarryDevelopment/luduvo-api-wrapper/ff515e86a93f3268ed44cc0cabe075811d3cec2f/gh-assets/logo.svg" alt="luduvo" height=128/>
 
+[Documentation](https://starrydevelopment.github.io/luduvo.py) | [Support Discord Server](https://discord.com/invite/8jsEtksQvD)
+
 ## Overview
 A modern, asynchronous Python wrapper for the Luduvo API.
 
