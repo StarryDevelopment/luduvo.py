@@ -1,9 +1,9 @@
 # Source file: https://github.com/Elttob/Fusion/blob/main/mkdocs.yml
 
-site_name: Luduvo API Wrapper
-site_url: https://starrydevelopment.github.io/luduvo-api-wrapper/
-repo_name: StarryDevelopment/luduvo-api-wrapper
-repo_url: https://github.com/StarryDevelopment/luduvo-api-wrapper
+site_name: luduvo.py
+site_url: https://starrydevelopment.github.io/luduvo.py/
+repo_name: StarryDevelopment/luduvo.py
+repo_url: https://github.com/StarryDevelopment/luduvo.py
 edit_uri: edit/main/docs/
 
 theme:
@@ -82,8 +82,8 @@ markdown_extensions:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/StarryDevelopment/luduvo-api-wrapper
-      name: luduvo-api-wrapper on GitHub
+      link: https://github.com/StarryDevelopment/luduvo.py
+      name: luduvo.py on GitHub
     - icon: fontawesome/brands/discord
       link: https://discord.gg/8jsEtksQvD
       name: StarryDevelopment Discord
