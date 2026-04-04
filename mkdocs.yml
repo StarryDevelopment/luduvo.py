@@ -1,6 +1,7 @@
 # Source file: https://github.com/Elttob/Fusion/blob/main/mkdocs.yml
 
 site_name: Luduvo API Wrapper
+site_url: https://starrydevelopment.github.io/luduvo-api-wrapper/
 repo_name: StarryDevelopment/luduvo-api-wrapper
 repo_url: https://github.com/StarryDevelopment/luduvo-api-wrapper
 edit_uri: edit/main/docs/
