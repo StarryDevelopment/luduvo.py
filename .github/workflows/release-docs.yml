@@ -38,3 +38,4 @@ jobs:
         run: |
           mike deploy ${{ github.event.release.tag_name }} --push
           mike alias ${{ github.event.release.tag_name }} latest --update-aliases --push
+          mike set-default latest --push
