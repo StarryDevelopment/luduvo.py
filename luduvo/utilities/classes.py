@@ -2,7 +2,13 @@ import datetime
 
 
 class Friend:
-    """Represents a friend of a Luduvo user."""
+    """
+    Represents a friend of a Luduvo user.
+
+    Attributes:
+        id: The friend's user ID.
+        username: The friend's username.
+    """
 
     def __init__(self, __client__, **data):
         self.id: int = data["user_id"]
@@ -14,7 +20,27 @@ class Friend:
 
 
 class User:
-    """Represents a Luduvo user."""
+    """
+    Represents a Luduvo user.
+
+    Attributes:
+        id: The user's ID.
+        username: The user's username.
+        member_since: The date and time the user joined Luduvo.
+        networth: The user's net worth.
+        display_name: The user's display name.
+        created_at: The date and time the user was created.
+        status: The user's status message.
+        bio: The user's biography.
+        avatar: A dictionary containing information about the user's avatar.
+        equipped_items: A list of items currently equipped by the user.
+        badges: A list of badges owned by the user.
+        friend_count: The number of friends the user has.
+        place_count: The number of places owned by the user.
+        item_count: The number of items owned by the user.
+        last_active: The date and time the user was last active on Luduvo.
+        allow_joins: Whether the user allows others to join their games.
+    """
 
     def __init__(self, client, data):
         self.id: int = data.get("user_id")
@@ -41,6 +67,14 @@ class User:
         return f"<User id={self.id} username={self.username}>"
 
     async def get_friends(self, limit: int = 50) -> list[Friend]:
+        """Gets the user's friends.
+
+        Args:
+            limit (int, optional): The maximum number of friends to retrieve. Defaults to 50.
+
+        Returns:
+            list[Friend]: A list of the user's friends.
+        """
         offset = 0
         friends: list[Friend] = []
 

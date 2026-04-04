@@ -1,3 +1,5 @@
+"""Contains the main client class for interacting with the Luduvo API."""
+
 import logging
 from .utilities.classes import User
 from .utilities.exceptions import NotFound, UserNotFound
@@ -9,7 +11,18 @@ logger = logging.getLogger("luduvo")
 
 
 class Client:
+    """Represents a Luduvo Client.
+
+    Attributes:
+        requests: The requests object, which is used to send requests to Luduvo endpoints.
+        url_generator: The URL generator object, which is used to generate URLs to send requests to endpoints.
+    """
+
     def __init__(self, base_url="luduvo.com"):
+        """
+        Args:
+            base_url (str, optional): The base URL for the Luduvo API.
+        """
         logger.debug("Initializing Client(base_url=%s)", base_url)
 
         self._url_generator: URLGenerator = URLGenerator(base_url=base_url)
@@ -30,7 +43,7 @@ class Client:
         Gets a user with the specified user ID.
 
         Arguments:
-            user_id: A Roblox user ID.
+            user_id: A Luduvo user ID.
 
         Returns:
             A user object.

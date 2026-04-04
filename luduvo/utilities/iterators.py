@@ -1,9 +1,18 @@
+"""This module is used internally to provide utilities for iterating over paginated endpoints."""
+
 from typing import Callable, Awaitable, List, TypeVar
 
 T = TypeVar("T")
 
 
 class Pagination:
+    """Utility for paginated endpoints.
+
+    Attributes:
+        _fetch_page: A callable that takes limit and offset and returns a dict with "items" and "total".
+        limit: The number of items to fetch per page.
+    """
+
     def __init__(
         self,
         fetch_page: Callable[[int, int], Awaitable[dict]],

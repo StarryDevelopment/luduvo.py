@@ -20,7 +20,7 @@ class URLGenerator:
     """
 
     def __init__(self, base_url: str):
-        self.base_url = base_url
+        self.base_url: str = base_url
 
     def get_subdomain(self, subdomain: str, protocol: str = "https") -> str:
         """
@@ -36,8 +36,8 @@ class URLGenerator:
 
     def get_url(
         self,
-        subdomain: str,
-        path: str = "",
+        path: str,
+        subdomain: str = "api",
         base_url: str = None,  # ty:ignore[invalid-parameter-default]
         protocol: str = "https",
     ) -> str:
@@ -45,10 +45,10 @@ class URLGenerator:
         Returns a full URL, given a subdomain name, protocol, and path.
 
         Arguments:
-            subdomain: The URL subdomain.
-            protocol: The URL protocol.
             path: The URL path.
+            subdomain: The URL subdomain.
             base_url: The base URL.
+            protocol: The URL protocol.
         """
         if base_url is None:
             base_url = self.base_url

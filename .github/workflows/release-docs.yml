@@ -1,0 +1,37 @@
+name: MkDocs Deploy (release)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Deploy docs (release)"
+
+jobs:
+  mkdocs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10.9"
+
+      - name: Install dependencies
+        run: |
+          pip install mkdocs-material==9.5.7 mkdocs-section-index==0.3.8 mkdocstrings==0.24.0 mkdocstrings-python==1.8.0 mkdocs-literate-nav==0.6.1 mkdocs-gen-files==0.5.0 mkdocs-autorefs==0.5.0 mike==2.0.0
+
+      - name: Configure Git user
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Deploy docs
+        run: |
+          mike deploy ${{ github.event.release.tag_name }} --push
+          mike alias ${{ github.event.release.tag_name }} latest --update-aliases --push

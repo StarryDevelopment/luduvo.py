@@ -1,0 +1,90 @@
+# Source file: https://github.com/Elttob/Fusion/blob/main/mkdocs.yml
+
+site_name: Luduvo API Wrapper
+repo_name: StarryDevelopment/luduvo-api-wrapper
+repo_url: https://github.com/StarryDevelopment/luduvo-api-wrapper
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light theme
+
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark theme
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: blue
+      toggle:
+        icon: material/brightness-3
+        name: Switch to automatic theme
+
+  features:
+    - content.code.annotate
+    - navigation.tabs
+
+extra_css:
+  - stylesheets/main.css
+
+watch:
+  - luduvo
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/scripts/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocstrings
+  - section-index
+
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - meta
+  - pymdownx.betterem
+  - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      guess_lang: false
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/StarryDevelopment/luduvo-api-wrapper
+      name: luduvo-api-wrapper on GitHub
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/N8yUdkSJwA
+      name: StarryDevelopment Discord
+  version:
+    provider: mike
