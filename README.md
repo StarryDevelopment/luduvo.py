@@ -17,7 +17,15 @@ A modern, asynchronous Python wrapper for the Luduvo API.
 - **Lightweight**: Minimal overhead and dependencies.
 
 ## Installation
-Install the latest stable version with:
+To Install the latest stable version run the following command:
 ```bash
 python3 -m pip install luduvo
 ```
+
+Or to install the latest **unstable** version of luduvo, install [git-scm](https://git-scm.com/downloads) and run the following:
+
+```bash
+python3 -m pip install git+https://github.com/StarryDevelopment/luduvo.py.git
+```
+> **Warning**  
+> Do not install the unstable version in production environments, as it is untested and may contain breaking changes or bugs.
