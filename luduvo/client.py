@@ -78,9 +78,7 @@ class Client:
         logger.debug(f"Fetching user with username: {username}")
         try:
             user_response = await self._requests.get(
-                url=self.url_generator.get_url(
-                    f"users?q={username}", "api"
-                )
+                url=self.url_generator.get_url(f"users?q={username}", "api")
             )
         except NotFound as exception:
             logger.error(f"User not found: {username}")
@@ -96,4 +94,3 @@ class Client:
             logger.debug(f"Expanding user data for username: {username}")
             return await self.get_user(user_info["id"])
         return PartialUser(client=self, data=user_info)
-
