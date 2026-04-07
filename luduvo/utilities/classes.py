@@ -26,10 +26,8 @@ class User:
     Attributes:
         id: The user's ID.
         username: The user's username.
-        member_since: The date and time the user joined Luduvo.
-        networth: The user's net worth.
+        created_at: The datetime the user joined Luduvo.
         display_name: The user's display name.
-        created_at: The date and time the user was created.
         status: The user's status message.
         bio: The user's biography.
         avatar: A dictionary containing information about the user's avatar.
@@ -38,19 +36,17 @@ class User:
         friend_count: The number of friends the user has.
         place_count: The number of places owned by the user.
         item_count: The number of items owned by the user.
-        last_active: The date and time the user was last active on Luduvo.
+        last_active:
         allow_joins: Whether the user allows others to join their games.
     """
 
     def __init__(self, client, data):
         self.id: int = data.get("user_id")
         self.username: str = data.get("username")
-        self.member_since: datetime.datetime = datetime.datetime.fromtimestamp(
+        self.created_at: datetime.datetime = datetime.datetime.fromtimestamp(
             data.get("member_since")
         )
-        self.networth = data.get("networth")
         self.display_name: str = data.get("display_name")
-        self.created_at: str = data.get("created_at")
         self.status: str = data.get("status")
         self.bio: str = data.get("bio")
         self.avatar: dict = data.get("avatar")
@@ -81,7 +77,7 @@ class User:
         while True:
             response = await self.__client__._requests.get(
                 url=self.__client__.url_generator.get_url(
-                    "api", f"users/{self.id}/friends"
+                    f"users/{self.id}/friends", "api"
                 ),
                 params={"limit": limit, "offset": offset},
             )
@@ -100,3 +96,27 @@ class User:
                 break
 
         return friends
+
+
+class PartialUser:
+    """
+    Represents a partial Luduvo user, containing only basic information.
+
+    Attributes:
+        id: The user's ID.
+        username: The user's username.
+        display_name: The user's display name.
+        created_at: The datetime the user joined Luduvo.
+    """
+
+    def __init__(self, client, data):
+        self.id: int = data.get("id")
+        self.username: str = data.get("username")
+        self.display_name: str = data.get("display_name")
+        self.created_at: datetime.datetime = datetime.datetime.fromtimestamp(
+            data.get("created_at")
+        )
+        self.__client__ = client
+
+    def __repr__(self):
+        return f"<PartialUser id={self.id} username={self.username}>"
