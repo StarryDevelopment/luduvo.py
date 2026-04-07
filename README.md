@@ -27,5 +27,5 @@ Or to install the latest **unstable** version of luduvo, install [git-scm](https
 ```bash
 python3 -m pip install git+https://github.com/StarryDevelopment/luduvo.py.git
 ```
-> **Warning**  
+> [!WARNING]
 > Do not install the unstable version in production environments, as it is untested and may contain breaking changes or bugs.
