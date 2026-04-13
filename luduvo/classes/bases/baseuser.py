@@ -1,0 +1,67 @@
+"""
+
+This module contains the BaseUser object, which represents a Luduvo user ID.
+
+"""
+
+from .baseitem import BaseItem
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...client import Client
+    from ..friends import Friend
+
+
+class BaseUser(BaseItem):
+    """
+    Represents a Luduvo user ID.
+
+    Attributes:
+        id: The user ID.
+    """
+
+    def __init__(self, client: Client, user_id: int):
+        """
+        Arguments:
+            client: The Client this object belongs to.
+            user_id: The user ID.
+        """
+
+        self._client = client
+        self.id: int = user_id
+
+    async def get_friends(self, limit: int = 50) -> list["Friend"]:
+        from ..friends import Friend
+
+        """Gets the user's friends.
+
+        Args:
+            limit (int, optional): The maximum number of friends to retrieve. Defaults to 50.
+
+        Returns:
+            list[Friend]: A list of the user's friends.
+        """
+        offset = 0
+        friends: list["Friend"] = []
+
+        while True:
+            response = await self._client._requests.get(
+                url=self._client.url_generator.get_url(
+                    f"users/{self.id}/friends", "api"
+                ),
+                params={"limit": limit, "offset": offset},
+            )
+
+            data = response.json()
+
+            page_friends = [Friend(_client=self._client, **f) for f in data["friends"]]
+
+            friends.extend(page_friends)
+
+            offset += limit
+
+            if offset >= data["total"] or not page_friends:
+                break
+
+        return friends

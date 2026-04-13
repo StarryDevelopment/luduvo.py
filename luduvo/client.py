@@ -1,7 +1,7 @@
 """Contains the main client class for interacting with the Luduvo API."""
 
 import logging
-from .utilities.classes import User, PartialUser
+from .classes import User, PartialUser
 from .utilities.exceptions import NotFound, UserNotFound
 from .utilities.url import URLGenerator
 from .utilities.requests import Requests
