@@ -6,6 +6,10 @@ This module contains classes intended to parse and deal with data from Luduvo us
 
 import datetime
 from .bases.baseuser import BaseUser
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..client import Client
 
 
 class User(BaseUser):
@@ -29,23 +33,28 @@ class User(BaseUser):
         allow_joins: Whether the user allows others to join their games.
     """
 
-    def __init__(self, client, data):
-        super().__init__(client, data.get("user_id") or data.get("id"))
-        self.username: str = data.get("username")
+    def __init__(self, client: "Client", data: dict):
+        """
+        Arguments:
+            client: The Client this object belongs to.
+            data: The data we got from endpoint.
+        """
+        super().__init__(client, data["user_id"])
+        self.username: str = data["username"]
         self.created_at: datetime.datetime = datetime.datetime.fromtimestamp(
-            data.get("member_since")
+            data["member_since"]
         )
-        self.display_name: str = data.get("display_name")
-        self.status: str = data.get("status")
-        self.bio: str = data.get("bio")
-        self.avatar: dict = data.get("avatar")
-        self.equipped_items: list = data.get("equipped_items")
-        self.badges: list = data.get("badges")
-        self.friend_count: int = data.get("friend_count")
-        self.place_count: int = data.get("place_count")
-        self.item_count: int = data.get("item_count")
-        self.last_active = data.get("last_active")
-        self.allow_joins: bool = data.get("allow_joins")
+        self.display_name: str = data["display_name"]
+        self.status: str = data["status"]
+        self.bio: str = data["bio"]
+        self.avatar: dict = data["avatar"]
+        self.equipped_items: list = data["equipped_items"]
+        self.badges: list = data["badges"]
+        self.friend_count: int = data["friend_count"]
+        self.place_count: int = data["place_count"]
+        self.item_count: int = data["item_count"]
+        self.last_active = data["last_active"]
+        self.allow_joins: bool = data["allow_joins"]
         self.__client__ = client
 
     def __repr__(self):

@@ -28,7 +28,7 @@ class BaseUser(BaseItem):
             user_id: The user ID.
         """
 
-        self._client = client
+        self.client = client
         self.id: int = user_id
 
     async def get_friends(self, limit: int = 50) -> list["Friend"]:
@@ -46,8 +46,8 @@ class BaseUser(BaseItem):
         friends: list["Friend"] = []
 
         while True:
-            response = await self._client._requests.get(
-                url=self._client.url_generator.get_url(
+            response = await self.client._requests.get(
+                url=self.client.url_generator.get_url(
                     f"users/{self.id}/friends", "api"
                 ),
                 params={"limit": limit, "offset": offset},
@@ -55,7 +55,7 @@ class BaseUser(BaseItem):
 
             data = response.json()
 
-            page_friends = [Friend(_client=self._client, **f) for f in data["friends"]]
+            page_friends = [Friend(client=self.client, data=f) for f in data["friends"]]
 
             friends.extend(page_friends)
 

@@ -4,8 +4,13 @@ This file contains partial objects related to Luduvo users.
 
 """
 
+
 import datetime
 from ..bases.baseuser import BaseUser
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...client import Client
 
 
 class PartialUser(BaseUser):
@@ -19,12 +24,18 @@ class PartialUser(BaseUser):
         created_at: The datetime the user joined Luduvo.
     """
 
-    def __init__(self, client, data):
-        super().__init__(client, data.get("user_id") or data.get("id"))
-        self.username: str = data.get("username")
-        self.display_name: str = data.get("display_name")
+    def __init__(self, client: "Client", data: dict):
+        """
+        Arguments:
+            client: The Client this object belongs to.
+            data: The data we got from endpoint.
+        """
+
+        super().__init__(client, data["user_id"])
+        self.username: str = data["username"]
+        self.display_name: str = data["display_name"]
         self.created_at: datetime.datetime = datetime.datetime.fromtimestamp(
-            data.get("created_at")
+            data["created_at"]
         )
         self._client = client
 

@@ -5,6 +5,10 @@ Contains classes related to Luduvo friend data and parsing.
 """
 
 from .bases.baseuser import BaseUser
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..client import Client
 
 
 class Friend(BaseUser):
@@ -16,10 +20,15 @@ class Friend(BaseUser):
         username: The friend's username.
     """
 
-    def __init__(self, _client, **data):
-        super().__init__(_client, data["user_id"])
+    def __init__(self, client: "Client", data: dict):
+        """
+        Arguments:
+            client: The Client this object belongs to.
+            data: The data we got from endpoint.
+        """
+        super().__init__(client, data["user_id"])
         self.username: str = data["username"]
-        self._client = _client
+        self.client = client
 
     def __repr__(self):
         return f"<Friend id={self.id} username={self.username}>"
