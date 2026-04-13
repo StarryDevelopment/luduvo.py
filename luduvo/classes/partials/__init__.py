@@ -5,5 +5,4 @@ Some endpoints return some, but not all, data for an object, and these partial o
 
 """
 
-from .partialuser import PartialUser # noqa: F401
-
+from .partialuser import PartialUser  # noqa: F401
