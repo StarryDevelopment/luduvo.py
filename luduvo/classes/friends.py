@@ -4,6 +4,8 @@ Contains classes related to Luduvo friend data and parsing.
 
 """
 
+from __future__ import annotations
+
 from .bases.baseuser import BaseUser
 from typing import TYPE_CHECKING
 

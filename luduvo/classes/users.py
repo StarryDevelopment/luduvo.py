@@ -4,6 +4,8 @@ This module contains classes intended to parse and deal with data from Luduvo us
 
 """
 
+from __future__ import annotations
+
 import datetime
 from .bases.baseuser import BaseUser
 from typing import TYPE_CHECKING

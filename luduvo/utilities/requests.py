@@ -6,7 +6,6 @@ This module contains classes used internally for sending requests to Luduvo endp
 
 from __future__ import annotations
 
-import asyncio
 from json import JSONDecodeError
 
 from httpx import AsyncClient, Response
@@ -25,12 +24,6 @@ class CleanAsyncClient(AsyncClient):
     def __init__(self):
         super().__init__()
 
-    def __del__(self):
-        try:
-            asyncio.get_event_loop().create_task(self.aclose())
-        except RuntimeError:
-            pass
-
 
 class Requests:
     """
@@ -42,7 +35,8 @@ class Requests:
 
     def __init__(
         self,
-        session: CleanAsyncClient = None,  # ty:ignore[invalid-parameter-default]
+        # ty:ignore[invalid-parameter-default]
+        session: CleanAsyncClient = None,
     ):
         """
         Arguments:

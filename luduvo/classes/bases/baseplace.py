@@ -3,6 +3,8 @@ This module contains the BasePlace object, which represents a Luduvo place ID.
 
 """
 
+from __future__ import annotations
+
 from .baseitem import BaseItem
 from typing import TYPE_CHECKING
 
@@ -18,7 +20,7 @@ class BasePlace(BaseItem):
         id: The place ID.
     """
 
-    def __init__(self, client: Client, place_id: int):
+    def __init__(self, client: "Client", place_id: int):
         """
         Arguments:
             client: The Client this object belongs to.

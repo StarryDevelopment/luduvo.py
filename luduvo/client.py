@@ -118,3 +118,15 @@ class Client:
         place_data = place_response.json()
         logger.debug(f"Successfully retrieved place data for ID: {place_id}")
         return Place(client=self, data=place_data)
+
+    async def close(self):
+        """
+        Closes the client session.
+        """
+        await self._requests.session.aclose()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
