@@ -51,8 +51,7 @@ class BaseUser(BaseItem):
 
             data = response.json()
 
-            page_friends = [Friend(client=self.client, data=f)
-                            for f in data["friends"]]
+            page_friends = [Friend(client=self.client, data=f) for f in data["friends"]]
 
             friends.extend(page_friends)
 
