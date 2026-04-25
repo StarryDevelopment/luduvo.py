@@ -18,18 +18,27 @@ class Client:
         url_generator: The URL generator object, which is used to generate URLs to send requests to endpoints.
     """
 
-    def __init__(self, base_url="luduvo.com"):
+    def __init__(self, username=None, password=None, base_url="luduvo.com"):
         """
         Args:
+            username (str, optional): The username for authentication.
+            password (str, optional): The password for authentication.
             base_url (str, optional): The base URL for the Luduvo API.
         """
         logger.debug("Initializing Client(base_url=%s)", base_url)
 
         self._url_generator: URLGenerator = URLGenerator(base_url=base_url)
-        self._requests: Requests = Requests()
+
+        if username and password:
+            logger.debug("Authenticating with username: %s", username)
+            self._requests = Requests(username=username, password=password)
+        else:
+            self._requests = Requests()
 
         self.url_generator: URLGenerator = self._url_generator
         self.requests: Requests = self._requests
+
+        self.authenticated: bool = self.requests.authenticated
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
@@ -94,6 +103,32 @@ class Client:
             logger.debug(f"Expanding user data for username: {username}")
             return await self.get_user(user_info["id"])
         return PartialUser(client=self, data=user_info)
+
+    async def get_authenticated_user(self) -> User:
+        """
+        Gets the authenticated user.
+
+        Returns:
+            A user object.
+        """
+        if not self.authenticated:
+            logger.error("Attempted to get authenticated user without authentication")
+            raise Exception("Client is not authenticated.")
+        logger.debug("Fetching authenticated user profile")
+        try:
+            user_response = await self._requests.get(
+                url=self.url_generator.get_url("me/profile")
+            )
+        except NotFound as exception:
+            logger.error("Authenticated user profile not found")
+            raise UserNotFound(
+                message="Authenticated user not found.", response=exception.response
+            ) from None
+        user_data = user_response.json()
+        logger.debug(
+            f"Successfully retrieved authenticated user data (ID: {user_data.get('user_id')})"
+        )
+        return User(client=self, data=user_data)
 
     async def get_place(self, place_id: int) -> Place:
         """

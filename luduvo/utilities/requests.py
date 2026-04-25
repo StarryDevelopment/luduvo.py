@@ -5,6 +5,10 @@ This module contains classes used internally for sending requests to Luduvo endp
 """
 
 from __future__ import annotations
+import httpx
+import asyncio
+
+
 
 from json import JSONDecodeError
 
@@ -35,8 +39,9 @@ class Requests:
 
     def __init__(
         self,
-        # ty:ignore[invalid-parameter-default]
-        session: CleanAsyncClient = None,
+        username: str | None = None,
+        password: str | None = None,
+        session: CleanAsyncClient | None = None,
     ):
         """
         Arguments:
@@ -49,8 +54,93 @@ class Requests:
         else:
             self.session = session
 
-        # self.session.headers["User-Agent"] = "Python/luduvo-api-wrapper"
-        # self.session.headers["Referer"] = "luduvo.com"
+        if username and password:
+            self.authenticate(username, password)
+            asyncio.create_task(self._authenticate_loop(username, password))
+        else:
+            self.authenticated = False
+            logger.debug("Initialized unauthenticated Requests instance")
+
+        self.session.headers["User-Agent"] = "Python/luduvo.py"
+
+    async def _authenticate_loop(
+        self, username: str, password: str, sleep_time: int = 3600
+    ):
+        """
+        An internal loop that re-authenticates the client every 60 minutes.
+
+        Arguments:
+            username: The username to authenticate with.
+            password: The password to authenticate with.
+            sleep_time: The time to sleep between re-authentications.
+        """
+        while True:
+            logger.debug(
+                "Sleeping for %d minutes before re-authentication", sleep_time // 60
+            )
+            await asyncio.sleep(sleep_time)
+            logger.debug("Re-authenticating with username: %s", username)
+            self.authenticate(username, password)
+
+    def authenticate(self, username: str, password: str):
+        """
+        Authenticates the client with the provided username and password.
+
+        Arguments:
+            username: The username to authenticate with.
+            password: The password to authenticate with.
+        """
+
+        resp = httpx.request(
+            "POST",
+            "https://api.luduvo.com/auth/login",
+            json={"identifier": username, "password": password},
+        )
+        if resp.is_error:
+            logger.error("Authentication failed for username: %s", username)
+            if resp.status_code == 401:
+                raise Exception("Authentication failed: Invalid username or password")
+            raise get_exception_from_status_code(resp.status_code)(response=resp)
+        if "token" not in resp.json() and "refresh_token" not in resp.json():
+            logger.error(
+                "Authentication response did not contain token or refresh_token for username: %s",
+                username,
+            )
+            raise Exception(
+                "Authentication failed: No token or refresh_token in response"
+            )
+        token = resp.json()["token"]
+
+        self.session.headers["Authorization"] = f"Bearer {token}"
+        check_resp = httpx.get(
+            "https://api.luduvo.com/me/profile",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        if check_resp.is_error:
+            logger.error("Authentication check failed for username: %s", username)
+            raise get_exception_from_status_code(check_resp.status_code)(
+                response=check_resp
+            )
+        if check_resp.json().get("user_id") is None:
+            logger.error(
+                "Authentication check response did not contain user ID for username: %s",
+                username,
+            )
+            raise Exception("Authentication failed: No user ID in check response")
+        if check_resp.json().get("username") != username:
+            logger.error(
+                "Authentication check response username did not match provided username for username: %s",
+                username,
+            )
+            raise Exception(
+                "Authentication failed: Check response username did not match provided username"
+            )
+        self.authenticated = True
+        logger.debug(
+            "Authenticated successfully with username: %s (ID: %s)",
+            username,
+            check_resp.json().get("user_id"),
+        )
 
     async def request(self, method: str, *args, **kwargs) -> Response:
         """

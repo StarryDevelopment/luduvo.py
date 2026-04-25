@@ -7,6 +7,7 @@
         "luduvo",
         "networth",
         "partialuser",
+        "pyjwt",
         "setuptools"
     ]
 }
