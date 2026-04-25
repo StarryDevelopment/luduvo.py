@@ -1353,6 +1353,28 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="luduvo.classes.users.User.accent_color">accent_color</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The user's accent color.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="luduvo.classes.users.User.banner_url">banner_url</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL of the user's banner image.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><span title="luduvo.classes.users.User.equipped_items">equipped_items</span></code></td>
             <td>
                   <code><span title="list">list</span></code>
@@ -1486,7 +1508,11 @@
 <span class="normal">60</span>
 <span class="normal">61</span>
 <span class="normal">62</span>
-<span class="normal">63</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">(</span><span class="n">BaseUser</span><span class="p">):</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">(</span><span class="n">BaseUser</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a Luduvo user.</span>
 
@@ -1498,6 +1524,8 @@
 <span class="sd">        status: The user&#39;s status message.</span>
 <span class="sd">        bio: The user&#39;s biography.</span>
 <span class="sd">        avatar: A dictionary containing information about the user&#39;s avatar.</span>
+<span class="sd">        accent_color: The user&#39;s accent color.</span>
+<span class="sd">        banner_url: The URL of the user&#39;s banner image.</span>
 <span class="sd">        equipped_items: A list of items currently equipped by the user.</span>
 <span class="sd">        badges: A list of badges owned by the user.</span>
 <span class="sd">        friend_count: The number of friends the user has.</span>
@@ -1522,6 +1550,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bio</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;bio&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">avatar</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;avatar&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accent_color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;accent_color&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">banner_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;banner_url&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">equipped_items</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;equipped_items&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">badges</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;badges&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">friend_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;friend_count&quot;</span><span class="p">]</span>
@@ -1611,9 +1641,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>luduvo/classes/users.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
@@ -1633,7 +1661,11 @@
 <span class="normal">57</span>
 <span class="normal">58</span>
 <span class="normal">59</span>
-<span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Arguments:</span>
 <span class="sd">        client: The Client this object belongs to.</span>
@@ -1648,6 +1680,8 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">bio</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;bio&quot;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">avatar</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;avatar&quot;</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">accent_color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;accent_color&quot;</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">banner_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;banner_url&quot;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">equipped_items</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;equipped_items&quot;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">badges</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;badges&quot;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">friend_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;friend_count&quot;</span><span class="p">]</span>
