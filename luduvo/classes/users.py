@@ -26,6 +26,8 @@ class User(BaseUser):
         status: The user's status message.
         bio: The user's biography.
         avatar: A dictionary containing information about the user's avatar.
+        accent_color: The user's accent color.
+        banner_url: The URL of the user's banner image.
         equipped_items: A list of items currently equipped by the user.
         badges: A list of badges owned by the user.
         friend_count: The number of friends the user has.
@@ -50,6 +52,8 @@ class User(BaseUser):
         self.status: str = data["status"]
         self.bio: str = data["bio"]
         self.avatar: dict = data["avatar"]
+        self.accent_color: str = data["accent_color"]
+        self.banner_url: str = data["banner_url"]
         self.equipped_items: list = data["equipped_items"]
         self.badges: list = data["badges"]
         self.friend_count: int = data["friend_count"]
