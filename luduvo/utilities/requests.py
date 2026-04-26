@@ -7,7 +7,8 @@ This module contains classes used internally for sending requests to Luduvo endp
 from __future__ import annotations
 import httpx
 import asyncio
-
+import jwt
+import datetime
 
 
 from json import JSONDecodeError
@@ -48,6 +49,7 @@ class Requests:
             session: A custom session object to use for sending requests, compatible with httpx.AsyncClient.
         """
         self.session: CleanAsyncClient
+        self.authenticated: bool = False
 
         if session is None:
             self.session = CleanAsyncClient()
@@ -55,34 +57,86 @@ class Requests:
             self.session = session
 
         if username and password:
-            self.authenticate(username, password)
-            asyncio.create_task(self._authenticate_loop(username, password))
+            logger.debug(
+                "Initializing authenticated Requests instance with username: %s",
+                username,
+            )
+            self.authenticated = self.authenticate(username=username, password=password)
         else:
             self.authenticated = False
             logger.debug("Initialized unauthenticated Requests instance")
 
         self.session.headers["User-Agent"] = "Python/luduvo.py"
 
-    async def _authenticate_loop(
-        self, username: str, password: str, sleep_time: int = 3600
+    async def _authenticate_with_refresh_token(
+        self, refresh_token: str, delay: int = 0
     ):
         """
-        An internal loop that re-authenticates the client every 60 minutes.
+        Internal method to re-authenticate the client using a refresh token.
 
         Arguments:
-            username: The username to authenticate with.
-            password: The password to authenticate with.
-            sleep_time: The time to sleep between re-authentications.
+            refresh_token: The refresh token to use for re-authentication.
+            delay: The delay in seconds before attempting re-authentication.
         """
-        while True:
+        if delay > 0:
             logger.debug(
-                "Sleeping for %d minutes before re-authentication", sleep_time // 60
+                "Waiting for %d minutes before attempting re-authentication with refresh token",
+                delay / 60,
             )
-            await asyncio.sleep(sleep_time)
-            logger.debug("Re-authenticating with username: %s", username)
-            self.authenticate(username, password)
+            await asyncio.sleep(delay)
+        logger.debug("Attempting re-authentication with refresh token")
+        try:
+            resp = httpx.request(
+                "POST",
+                "https://api.luduvo.com/auth/refresh",
+                json={"refresh_token": refresh_token},
+            )
+            if resp.is_error:
+                logger.error(
+                    "Re-authentication with refresh token failed: %s %s",
+                    resp.status_code,
+                    resp.reason_phrase,
+                )
+                raise get_exception_from_status_code(resp.status_code)(response=resp)
+            if "token" not in resp.json() and "refresh_token" not in resp.json():
+                raise Exception(
+                    "Re-authentication failed: No token or refresh_token in response"
+                )
+            new_token = resp.json()["token"]
+            new_refresh_token = resp.json()["refresh_token"]
 
-    def authenticate(self, username: str, password: str):
+            decoded_token = jwt.decode(new_token, options={"verify_signature": False})
+            exp = decoded_token.get("exp")
+            iat = decoded_token.get("iat")
+            if exp and iat:
+                logger.debug(
+                    "Re-authenticated successfully with refresh token (Token expires at %s, issued at %s)",
+                    datetime.datetime.fromtimestamp(exp),
+                    datetime.datetime.fromtimestamp(iat),
+                )
+                sleep_time = (
+                    (exp - iat) - 3600  # Schedule 1 hour before expiration
+                )
+                logger.debug(
+                    "Scheduling next re-authentication in %d minutes",
+                    sleep_time // 60,
+                )
+                asyncio.create_task(
+                    self._authenticate_with_refresh_token(
+                        refresh_token=new_refresh_token, delay=sleep_time
+                    )
+                )
+
+            self.session.headers["Authorization"] = f"Bearer {new_token}"
+        except Exception as e:
+            logger.error("Failed to re-authenticate with refresh token: %s", str(e))
+            raise
+
+    def authenticate(
+        self,
+        username: str | None = None,
+        password: str | None = None,
+    ) -> bool:
         """
         Authenticates the client with the provided username and password.
 
@@ -91,25 +145,48 @@ class Requests:
             password: The password to authenticate with.
         """
 
+        if not (username and password):
+            raise ValueError(
+                "Username and password must be provided for authentication"
+            )
+
         resp = httpx.request(
             "POST",
             "https://api.luduvo.com/auth/login",
             json={"identifier": username, "password": password},
         )
         if resp.is_error:
-            logger.error("Authentication failed for username: %s", username)
             if resp.status_code == 401:
                 raise Exception("Authentication failed: Invalid username or password")
             raise get_exception_from_status_code(resp.status_code)(response=resp)
         if "token" not in resp.json() and "refresh_token" not in resp.json():
-            logger.error(
-                "Authentication response did not contain token or refresh_token for username: %s",
-                username,
-            )
             raise Exception(
                 "Authentication failed: No token or refresh_token in response"
             )
         token = resp.json()["token"]
+        refresh_token = resp.json()["refresh_token"]
+
+        # Decode the token to extract user information
+        decoded_token = jwt.decode(token, options={"verify_signature": False})
+        exp = decoded_token.get("exp")
+        iat = decoded_token.get("iat")
+        if exp and iat:
+            logger.debug(
+                "Authenticated successfully with username: %s (Token expires at %s, issued at %s)",
+                username,
+                datetime.datetime.fromtimestamp(exp),
+                datetime.datetime.fromtimestamp(iat),
+            )
+            sleep_time = (exp - iat) - 3600  # Schedule 1 hour before expiration
+            logger.debug(
+                "Scheduling re-authentication in %d minutes",
+                sleep_time // 60,
+            )
+            asyncio.create_task(
+                self._authenticate_with_refresh_token(
+                    refresh_token=refresh_token, delay=sleep_time
+                )
+            )
 
         self.session.headers["Authorization"] = f"Bearer {token}"
         check_resp = httpx.get(
@@ -117,30 +194,22 @@ class Requests:
             headers={"Authorization": f"Bearer {token}"},
         )
         if check_resp.is_error:
-            logger.error("Authentication check failed for username: %s", username)
             raise get_exception_from_status_code(check_resp.status_code)(
                 response=check_resp
             )
         if check_resp.json().get("user_id") is None:
-            logger.error(
-                "Authentication check response did not contain user ID for username: %s",
-                username,
-            )
             raise Exception("Authentication failed: No user ID in check response")
         if check_resp.json().get("username") != username:
-            logger.error(
-                "Authentication check response username did not match provided username for username: %s",
-                username,
-            )
             raise Exception(
                 "Authentication failed: Check response username did not match provided username"
             )
-        self.authenticated = True
         logger.debug(
             "Authenticated successfully with username: %s (ID: %s)",
             username,
             check_resp.json().get("user_id"),
         )
+        self.authenticated = True
+        return True
 
     async def request(self, method: str, *args, **kwargs) -> Response:
         """
