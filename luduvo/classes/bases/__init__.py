@@ -8,5 +8,5 @@ These bases represent one of those IDs.
 
 from .baseuser import BaseUser  # noqa: F401
 from .baseitem import BaseItem  # noqa: F401
-from .baseplace import BasePlace # noqa: F401
+from .baseplace import BasePlace  # noqa: F401
 from .basegroup import BaseGroup  # noqa: F401

@@ -14,9 +14,6 @@ if TYPE_CHECKING:
     from ..client import Client
 
 
-
-
-
 class Group(BaseGroup):
     """
     Represents a Luduvo group.
@@ -55,4 +52,3 @@ class Group(BaseGroup):
         self.updated_at: datetime.datetime = datetime.datetime.fromtimestamp(
             data["updated_at"]
         )
-

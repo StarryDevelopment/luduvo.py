@@ -166,14 +166,10 @@ class Client:
                 url=self.url_generator.get_url(f"groups/{group_id}")
             )
         except NotFound as exception:
-            raise GroupNotFound(
-                message="Invalid group.", response=exception.response
-            )
+            raise GroupNotFound(message="Invalid group.", response=exception.response)
         group_data = group_response.json()
         logger.debug(f"Successfully retrieved group data for ID: {group_id}")
         return Group(client=self, data=group_data)
-
-
 
     async def close(self):
         """

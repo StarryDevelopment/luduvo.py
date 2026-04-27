@@ -3,6 +3,7 @@
 This module contains classes intended to parse and deal with data from Luduvo group member endpoints.
 
 """
+
 from typing import Union, TYPE_CHECKING
 import datetime
 
@@ -11,6 +12,7 @@ from .bases import BaseUser
 if TYPE_CHECKING:
     from ..client import Client
     from .bases.basegroup import BaseGroup
+
 
 class MemberRelationship(BaseUser):
     """
@@ -21,7 +23,10 @@ class MemberRelationship(BaseUser):
     """
 
     def __init__(
-        self, client: "Client", user: Union[BaseUser, int], group: Union["BaseGroup", int]
+        self,
+        client: "Client",
+        user: Union[BaseUser, int],
+        group: Union["BaseGroup", int],
     ):
         self._client: Client = client
         super().__init__(client=self._client, user_id=int(user))
@@ -32,6 +37,7 @@ class MemberRelationship(BaseUser):
             self.group = BaseGroup(client=self._client, group_id=group)
         else:
             self.group = group
+
 
 class Member(MemberRelationship):
     """

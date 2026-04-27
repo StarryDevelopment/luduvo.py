@@ -204,6 +204,7 @@ class PlaceNotFound(ItemNotFound):
 
     pass
 
+
 class GroupNotFound(ItemNotFound):
     """
     Raised for invalid group IDs.

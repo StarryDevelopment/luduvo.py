@@ -15,9 +15,6 @@ if TYPE_CHECKING:
     from ..client import Client
 
 
-
-
-
 class Place(BasePlace):
     """
     Represents a Luduvo place.

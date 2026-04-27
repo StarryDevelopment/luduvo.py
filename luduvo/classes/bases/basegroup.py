@@ -55,7 +55,9 @@ class BaseGroup(BaseItem):
 
             data = response.json()
 
-            page_members = [Member(client=self._client, data=f, group=self) for f in data["members"]]
+            page_members = [
+                Member(client=self._client, data=f, group=self) for f in data["members"]
+            ]
 
             members.extend(page_members)
 
@@ -65,4 +67,3 @@ class BaseGroup(BaseItem):
                 break
 
         return members
-
