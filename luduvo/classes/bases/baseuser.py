@@ -67,3 +67,16 @@ class BaseUser(BaseItem):
                 break
 
         return friends
+
+    async def get_headshot_url(self) -> str | None:
+        """Gets the user's headshot url.
+
+        Returns:
+            str: Headshot URL
+        """
+        response = await self.client.requests.get(
+            url=self.client.url_generator.get_url(f"users/{self.id}/avatar/headshot"),
+            follow_redirects=False,
+        )
+        url = response.headers.get("Location", None)
+        return url
