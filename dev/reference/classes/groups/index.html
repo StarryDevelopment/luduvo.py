@@ -1467,7 +1467,7 @@
           <tr class="doc-section-item">
             <td><code><span title="luduvo.classes.groups.Group.icon_url">icon_url</span></code></td>
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1577,7 +1577,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">owner_username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;owner_username&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">access</span><span class="p">:</span> <span class="n">GroupAccess</span> <span class="o">=</span> <span class="n">GroupAccess</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;access&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">member_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;member_count&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">icon_url</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;icon_url&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">icon_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;icon_url&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span>
             <span class="n">data</span><span class="p">[</span><span class="s2">&quot;created_at&quot;</span><span class="p">]</span>
         <span class="p">)</span>
@@ -1696,7 +1696,7 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">owner_username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;owner_username&quot;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">access</span><span class="p">:</span> <span class="n">GroupAccess</span> <span class="o">=</span> <span class="n">GroupAccess</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;access&quot;</span><span class="p">])</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">member_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;member_count&quot;</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">icon_url</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;icon_url&quot;</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">icon_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;icon_url&quot;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;created_at&quot;</span><span class="p">]</span>
     <span class="p">)</span>
