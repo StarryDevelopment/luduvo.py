@@ -76,8 +76,7 @@ class BaseUser(BaseItem):
 
             return {
                 "items": [
-                    Friend(client=self.client, data=f)
-                    for f in data.get("friends", [])
+                    Friend(client=self.client, data=f) for f in data.get("friends", [])
                 ],
                 "total": data.get("total", 0),
             }
@@ -92,7 +91,9 @@ class BaseUser(BaseItem):
         """
         try:
             response = await self.client.requests.get(
-                url=self.client.url_generator.get_url(f"users/{self.id}/avatar/headshot"),
+                url=self.client.url_generator.get_url(
+                    f"users/{self.id}/avatar/headshot"
+                ),
                 follow_redirects=False,
             )
             url = response.headers.get("Location", None)
