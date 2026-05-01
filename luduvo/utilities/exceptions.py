@@ -211,3 +211,17 @@ class GroupNotFound(ItemNotFound):
     """
 
     pass
+
+
+class UserNotMemberOfGroup(ItemNotFound):
+    """
+    Raised for invalid group member IDs.
+    """
+
+    pass
+
+
+class MemberNotBanned(ItemNotFound):
+    """
+    Raised for invalid banned group member IDs.
+    """
