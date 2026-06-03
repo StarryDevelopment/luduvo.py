@@ -1,7 +1,7 @@
 """Contains the main client class for interacting with the Luduvo API."""
 
 import logging
-from .classes import User, PartialUser, Place, Group
+from .classes import User, Place, Group
 from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound
 from .utilities.url import URLGenerator
 from .utilities.requests import Requests
@@ -92,20 +92,17 @@ class Client:
         logger.debug(f"Successfully retrieved user data for ID: {user_id}")
         return User(client=self, data=user_data)
 
-    async def get_user_by_username(
-        self, username: str, expand: bool = True
-    ) -> User | PartialUser:
+    async def get_user_by_username(self, username: str, expand: bool = True) -> User:
         """
         Retrieve a user by their username.
 
         Args:
             username (str): The username to search for.
-            expand (bool, optional): If True, returns a full User object by
-                performing an additional request. If False, returns a PartialUser.
-                Defaults to True.
+            expand (bool, optional): Deprecated. Whether to return a full User object or a PartialUser.
+                Defaults to True. This parameter is ignored as of v1.2.0 and will always return a full User object.
 
         Returns:
-            User | PartialUser: The requested user representation.
+            User: The requested user representation.
 
         Raises:
             UserNotFound: If no user matches the given username.
@@ -119,7 +116,9 @@ class Client:
         logger.debug(f"Fetching user with username: {username}")
         try:
             user_response = await self._requests.get(
-                url=self.url_generator.get_url(f"users?q={username}", "api")
+                url=self.url_generator.get_url(
+                    f"users/by-username/{username}/profile", "api"
+                )
             )
         except NotFound as exception:
             logger.error(f"User not found: {username}")
@@ -128,15 +127,10 @@ class Client:
             ) from None
 
         user_data = user_response.json()
-        if len(user_data) == 0:
+        if len(user_data) == 0 or "user_id" not in user_data:
             raise UserNotFound(message="Invalid user.")
 
-        user_info = user_data[0]
-        if expand:
-            logger.debug(f"Expanding user data for username: {username}")
-            return await self.get_user(user_info["id"])
-
-        return PartialUser(client=self, data=user_info)
+        return User(client=self, data=user_data)
 
     async def get_authenticated_user(self) -> User:
         """
