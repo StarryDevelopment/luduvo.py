@@ -63,5 +63,5 @@ class Place(BasePlace):
             data["updated_at"]
         )
         self.thumbnail_url: str = data["thumbnail_url"]
-        self.has_map: bool = data["has_map"]
-        self.tags: list[str] = data["tags"]
+        self.has_map: bool | None = data.get("has_map")
+        self.tags: list[str] = data.get("tags") or []

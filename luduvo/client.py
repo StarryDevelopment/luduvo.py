@@ -23,7 +23,7 @@ class Client:
         authenticated: Whether the client is currently authenticated.
     """
 
-    def __init__(self, username=None, password=None, base_url="luduvo.com"):
+    def __init__(self, username=None, password=None, base_url="luduvo.com", *, token=None):
         """
         Initialize a Luduvo Client instance.
 
@@ -41,16 +41,17 @@ class Client:
 
         self._url_generator: URLGenerator = URLGenerator(base_url=base_url)
 
-        if username and password:
-            logger.debug("Authenticating with username: %s", username)
-            self._requests = Requests(username=username, password=password)
-        else:
-            self._requests = Requests()
+        self._requests = Requests(username=username, password=password,
+                                  base_url=base_url, token=token)
+        self.url_generator = self._url_generator
+        self.requests = self._requests
 
-        self.url_generator: URLGenerator = self._url_generator
-        self.requests: Requests = self._requests
+    @property
+    def authenticated(self) -> bool:
+        return self.requests.authenticated
 
-        self.authenticated: bool = self.requests.authenticated
+    async def login(self, username: str, password: str) -> bool:
+        return await self.requests.authenticate(username, password)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
@@ -149,6 +150,7 @@ class Client:
             print(me.username)
             ```
         """
+        await self.requests.ensure_authenticated()
         if not self.authenticated:
             raise Exception("Client is not authenticated.")
 
@@ -239,9 +241,14 @@ class Client:
         """
         Close the underlying HTTP session used by the client.
         """
-        await self._requests.session.aclose()
+        await self._requests.close()
 
     async def __aenter__(self):
+        try:
+            await self.requests.ensure_authenticated()
+        except BaseException:
+            await self.close()
+            raise
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
