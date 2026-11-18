@@ -1,6 +1,9 @@
 """Contains the main client class for interacting with the Luduvo API."""
 
 import logging
+from .utilities.resources import paginate, get_json
+from .classes.search import UserSearchResult
+from .classes.friends import Friend
 from .classes import User, Place, Group, BaseGroup, BaseUser, Presence
 from .utilities.iterators import AsyncPaginator
 from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound
@@ -267,6 +270,74 @@ class Client:
 
     async def get_presence(self, user_id: int) -> Presence:
         return await self.get_partial_user(user_id).get_presence()
+
+    def search_users(self, query: str, page_size: int = 50):
+        return paginate(self, "users", "users", page_size, q=query,
+                        transform=lambda data: UserSearchResult(self, data))
+
+    def search_places(self, query: str, page_size: int = 50, *, sort=None):
+        params = {"q": query}
+        if sort is not None:
+            params["sort"] = sort
+        return paginate(self, "places", "places", page_size, **params)
+
+    def search_store(self, page_size: int = 50, *, sort=None, made_by=None):
+        params = {k: v for k, v in {"sort": sort, "made_by": made_by}.items()
+                  if v is not None}
+        return paginate(self, "store", "items", page_size, **params)
+
+    async def get_store_item(self, item_id: int):
+        return await get_json(self, f"store/{item_id}")
+
+    async def get_item_variants(self, item_id: int):
+        return (await get_json(self, f"items/{item_id}/variants"))["variants"]
+
+    async def get_store_categories(self):
+        return await get_json(self, "store/categories")
+
+    def my_inventory(self, page_size: int = 50):
+        return paginate(self, "me/inventory", "items", page_size)
+
+    def my_friends(self, page_size: int = 50):
+        return paginate(self, "me/friends", "friends", page_size,
+                        transform=lambda data: Friend(client=self, data=data))
+
+    def pending_friends(self, page_size: int = 50):
+        return paginate(self, "me/friends/pending", "requests", page_size)
+
+    def my_ignores(self, page_size: int = 50):
+        return paginate(self, "me/ignores", "items", page_size)
+
+    async def my_balance(self) -> int:
+        return (await get_json(self, "me/balance"))["balance"]
+
+    async def my_outfits(self):
+        return (await get_json(self, "me/outfits"))["outfits"]
+
+    def recently_played(self, page_size: int = 50):
+        return paginate(self, "me/recently-played", "places", page_size)
+
+    def conversations(self, page_size: int = 50):
+        return paginate(self, "me/conversations", "conversations", page_size)
+
+    async def conversation_messages(self, conversation_id: int, *, limit: int = 50):
+        if limit <= 0:
+            raise ValueError("limit must be positive")
+        return await get_json(self, f"conversations/{conversation_id}/messages", limit=limit)
+
+    async def trade_counts(self):
+        return await get_json(self, "me/trades/counts")
+
+    def trades(self, kind: str, page_size: int = 50):
+        if kind not in {"received", "sent", "history"}:
+            raise ValueError("Unknown trade kind")
+        return paginate(self, f"me/trades/{kind}", "trades", page_size)
+
+    async def site_banners(self):
+        return (await get_json(self, "site/banners"))["items"]
+
+    async def site_promos(self):
+        return (await get_json(self, "site/promos"))["items"]
 
     async def close(self):
         """

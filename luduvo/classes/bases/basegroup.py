@@ -9,6 +9,7 @@ from .baseitem import BaseItem
 from ...utilities.iterators import AsyncPaginator
 from ..group_roles import GroupRole
 from ..group_metrics import GroupMetrics
+from ...utilities.resources import paginate, get_json
 
 from typing import TYPE_CHECKING
 
@@ -77,6 +78,17 @@ class BaseGroup(BaseItem):
 
     def store_items(self, page_size: int = 50) -> AsyncPaginator[dict]:
         return self._paginate("store", "items", page_size)
+
+    def funds(self, page_size: int = 50):
+        """Iterate group ledger entries (requires appropriate permissions)."""
+        return paginate(self._client, f"groups/{self.id}/funds", "entries", page_size)
+
+    async def get_funds_balance(self) -> int:
+        data = await get_json(self._client, f"groups/{self.id}/funds", limit=1, offset=0)
+        return data["balance_earned"]
+
+    async def pending_transfer(self):
+        return (await get_json(self._client, f"groups/{self.id}/transfer/pending"))["pending"]
 
     async def roles(self) -> list[GroupRole]:
         """Retrieve the group's available roles."""
