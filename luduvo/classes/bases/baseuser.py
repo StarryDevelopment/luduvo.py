@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from .baseitem import BaseItem
 from ...utilities.iterators import AsyncPaginator
+from ..presence import Presence
 
 if TYPE_CHECKING:
     from ...client import Client
@@ -33,6 +34,16 @@ class BaseUser(BaseItem):
 
         self.client = client
         self.id: int = user_id
+
+    async def get_presence(self) -> Presence:
+        response = await self.client.requests.get(
+            self.client.url_generator.get_url(f"users/{self.id}/presence")
+        )
+        return Presence.from_api(response.json(), self.id)
+
+    def groups(self, page_size: int = 50) -> AsyncPaginator:
+        """Iterate the groups this user belongs to."""
+        return self.client._groups(f"users/{self.id}/groups", page_size)
 
     def friends(self, page_size: int = 50) -> AsyncPaginator["Friend"]:
         """Returns an async paginator over the user's friends.

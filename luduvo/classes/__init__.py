@@ -8,3 +8,6 @@ from .places import Place  # noqa: F401
 from .groups import Group  # noqa: F401
 
 from .group_roles import GroupRole  # noqa: F401
+
+from .presence import Presence  # noqa: F401
+from .group_metrics import GroupMetrics, MetricComparison  # noqa: F401

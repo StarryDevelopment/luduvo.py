@@ -1,7 +1,8 @@
 """Contains the main client class for interacting with the Luduvo API."""
 
 import logging
-from .classes import User, Place, Group
+from .classes import User, Place, Group, BaseGroup, BaseUser, Presence
+from .utilities.iterators import AsyncPaginator
 from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound
 from .utilities.url import URLGenerator
 from .utilities.requests import Requests
@@ -236,6 +237,36 @@ class Client:
         group_data = group_response.json()
         logger.debug(f"Successfully retrieved group data for ID: {group_id}")
         return Group(client=self, data=group_data)
+
+    def _groups(self, path: str, page_size: int, **params) -> AsyncPaginator[Group]:
+        if page_size <= 0:
+            raise ValueError("page_size must be positive")
+
+        async def fetch_page(offset: int):
+            response = await self.requests.get(
+                self.url_generator.get_url(path),
+                params={**params, "limit": page_size, "offset": offset},
+            )
+            data = response.json()
+            return {"items": [Group(self, item) for item in data["groups"]],
+                    "total": data["total"]}
+
+        return AsyncPaginator(fetch_page)
+
+    def search_groups(self, query: str, page_size: int = 50) -> AsyncPaginator[Group]:
+        return self._groups("groups", page_size, q=query)
+
+    def get_my_groups(self, page_size: int = 50) -> AsyncPaginator[Group]:
+        return self._groups("me/groups", page_size)
+
+    def get_partial_group(self, group_id: int) -> BaseGroup:
+        return BaseGroup(self, group_id)
+
+    def get_partial_user(self, user_id: int) -> BaseUser:
+        return BaseUser(self, user_id)
+
+    async def get_presence(self, user_id: int) -> Presence:
+        return await self.get_partial_user(user_id).get_presence()
 
     async def close(self):
         """

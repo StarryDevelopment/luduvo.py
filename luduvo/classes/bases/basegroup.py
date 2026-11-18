@@ -8,6 +8,7 @@ from luduvo.utilities.exceptions import UserNotMemberOfGroup, NotFound, MemberNo
 from .baseitem import BaseItem
 from ...utilities.iterators import AsyncPaginator
 from ..group_roles import GroupRole
+from ..group_metrics import GroupMetrics
 
 from typing import TYPE_CHECKING
 
@@ -38,6 +39,44 @@ class BaseGroup(BaseItem):
 
         self._client = client
         self.id: int = group_id
+
+    async def metrics(self, *, range: str) -> GroupMetrics:
+        """Fetch analytics for an API-supported range using the current account."""
+        response = await self._client.requests.get(
+            self._client.url_generator.get_url(f"me/groups/{self.id}/metrics"),
+            params={"range": range},
+        )
+        return GroupMetrics.from_api(response.json())
+
+    def _paginate(self, resource: str, key: str, page_size: int) -> AsyncPaginator[dict]:
+        if page_size <= 0:
+            raise ValueError("page_size must be positive")
+
+        async def fetch_page(offset: int):
+            response = await self._client.requests.get(
+                self._client.url_generator.get_url(f"groups/{self.id}/{resource}"),
+                params={"limit": page_size, "offset": offset},
+            )
+            data = response.json()
+            return {"items": data[key], "total": data["total"]}
+
+        return AsyncPaginator(fetch_page)
+
+    def bans(self, page_size: int = 50) -> AsyncPaginator[dict]:
+        """Iterate raw ban records."""
+        return self._paginate("bans", "bans", page_size)
+
+    def announcements(self, page_size: int = 50) -> AsyncPaginator[dict]:
+        return self._paginate("announcements", "announcements", page_size)
+
+    def wall_posts(self, page_size: int = 50) -> AsyncPaginator[dict]:
+        return self._paginate("wall", "posts", page_size)
+
+    def places(self, page_size: int = 50) -> AsyncPaginator[dict]:
+        return self._paginate("places", "places", page_size)
+
+    def store_items(self, page_size: int = 50) -> AsyncPaginator[dict]:
+        return self._paginate("store", "items", page_size)
 
     async def roles(self) -> list[GroupRole]:
         """Retrieve the group's available roles."""
