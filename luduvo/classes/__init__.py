@@ -6,3 +6,5 @@ from .users import User  # noqa: F401
 from .friends import Friend  # noqa: F401
 from .places import Place  # noqa: F401
 from .groups import Group  # noqa: F401
+
+from .group_roles import GroupRole  # noqa: F401

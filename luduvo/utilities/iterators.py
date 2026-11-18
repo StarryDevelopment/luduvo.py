@@ -11,6 +11,8 @@ class AsyncPaginator(Generic[T]):
         self._limit = None
 
     def limit(self, value: int) -> "AsyncPaginator[T]":
+        if value < 0:
+            raise ValueError("limit must be non-negative")
         self._limit = value
         return self
 
@@ -29,6 +31,8 @@ class AsyncPaginator(Generic[T]):
         return self._iterator()
 
     async def _iterator(self) -> AsyncIterator[T]:
+        if self._limit == 0:
+            return
         offset = 0
         fetched = 0
 

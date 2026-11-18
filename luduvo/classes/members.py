@@ -9,10 +9,11 @@ from typing import Union, TYPE_CHECKING
 import datetime
 
 from .bases import BaseUser
+from .group_roles import GroupRole
+from .bases.basegroup import BaseGroup
 
 if TYPE_CHECKING:
     from ..client import Client
-    from .bases.basegroup import BaseGroup
 
 
 class MemberRelationship(BaseUser):
@@ -61,6 +62,20 @@ class Member(MemberRelationship):
         super().__init__(client=self._client, user=self.id, group=group)
 
         self.group: BaseGroup = group
+        self.roles = [GroupRole.from_api(role) for role in data.get("roles") or []]
+        self.permissions: int | None = data.get("permissions")
+
+    def has_role(self, role_id: int) -> bool:
+        """Check the roles in this membership snapshot."""
+        return any(role.id == role_id for role in self.roles)
+
+    async def add_role(self, role_id: int) -> bool:
+        """Assign a role; fetch the member again to refresh its snapshot."""
+        return await self.group.add_member_role(self.id, role_id)
+
+    async def remove_role(self, role_id: int) -> bool:
+        """Remove a role; fetch the member again to refresh its snapshot."""
+        return await self.group.remove_member_role(self.id, role_id)
 
     @classmethod
     def from_api(cls, client: "Client", data: dict, group: "BaseGroup") -> "Member":

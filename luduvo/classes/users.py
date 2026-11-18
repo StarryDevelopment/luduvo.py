@@ -48,19 +48,25 @@ class User(BaseUser):
         self.created_at: datetime.datetime = datetime.datetime.fromtimestamp(
             data["member_since"]
         )
-        self.display_name: str = data["display_name"]
-        self.status: str = data["status"]
-        self.bio: str = data["bio"]
+        self.display_name: str | None = data.get("display_name")
+        self.status: str | None = data.get("status")
+        self.bio: str = data.get("bio") or ""
         self.avatar: dict = data["avatar"]
-        self.accent_color: str = data["accent_color"]
-        self.banner_url: str = data["banner_url"]
+        self.accent_color: str | None = data.get("accent_color")
+        self.banner_url: str | None = data.get("banner_url")
         self.equipped_items: list = data["equipped_items"]
         self.badges: list = data["badges"]
         self.friend_count: int = data["friend_count"]
         self.place_count: int = data["place_count"]
         self.item_count: int = data["item_count"]
         self.last_active = data["last_active"]
-        self.allow_joins: bool = data["allow_joins"]
+        self.allow_joins: bool | None = data.get("allow_joins")
+        self.join_policy = data.get("join_policy")
+        self.headshot_url = data.get("headshot_url")
+        self.visibility = data.get("visibility")
+        self.networth = data.get("networth")
+        self.tier = data.get("tier")
+        self.is_owner = data.get("is_owner")
         self.__client__ = client
 
     def __repr__(self):

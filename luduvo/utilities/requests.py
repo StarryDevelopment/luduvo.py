@@ -5,7 +5,6 @@ This module contains classes used internally for sending requests to Luduvo endp
 """
 
 from __future__ import annotations
-import httpx
 import asyncio
 import jwt
 import datetime
@@ -43,6 +42,8 @@ class Requests:
         username: str | None = None,
         password: str | None = None,
         session: CleanAsyncClient | None = None,
+        base_url: str = "luduvo.com",
+        token: str | None = None,
     ):
         """
         Arguments:
@@ -56,162 +57,73 @@ class Requests:
         else:
             self.session = session
 
-        if username and password:
-            logger.debug(
-                "Initializing authenticated Requests instance with username: %s",
-                username,
-            )
-            self.authenticated = self.authenticate(username=username, password=password)
-        else:
-            self.authenticated = False
-            logger.debug("Initialized unauthenticated Requests instance")
-
+        if bool(username) != bool(password):
+            raise ValueError("Both username and password are required")
+        if token and username:
+            raise ValueError("Choose credentials or token, not both")
+        self.base_url = base_url
+        self._auth_lock = asyncio.Lock()
+        self._credentials = (username, password) if username and password else None
+        self._refresh_token = None
+        self._expires_at = None
+        if token:
+            self.session.headers["Authorization"] = f"Bearer {token}"
+            self.authenticated = True
         self.session.headers["User-Agent"] = "Python/luduvo.py"
 
-    async def _authenticate_with_refresh_token(
-        self, refresh_token: str, delay: int = 0
-    ):
-        """
-        Internal method to re-authenticate the client using a refresh token.
-
-        Arguments:
-            refresh_token: The refresh token to use for re-authentication.
-            delay: The delay in seconds before attempting re-authentication.
-        """
-        if delay > 0:
-            logger.debug(
-                "Waiting for %d minutes before attempting re-authentication with refresh token",
-                delay / 60,
-            )
-            await asyncio.sleep(delay)
-        logger.debug("Attempting re-authentication with refresh token")
-        try:
-            resp = httpx.request(
-                "POST",
-                "https://api.luduvo.com/auth/refresh",
-                json={"refresh_token": refresh_token},
-            )
-            if resp.is_error:
-                logger.error(
-                    "Re-authentication with refresh token failed: %s %s",
-                    resp.status_code,
-                    resp.reason_phrase,
-                )
-                raise get_exception_from_status_code(resp.status_code)(response=resp)
-            if "token" not in resp.json() and "refresh_token" not in resp.json():
-                raise Exception(
-                    "Re-authentication failed: No token or refresh_token in response"
-                )
-            new_token = resp.json()["token"]
-            new_refresh_token = resp.json()["refresh_token"]
-
-            decoded_token = jwt.decode(new_token, options={"verify_signature": False})
-            exp = decoded_token.get("exp")
-            iat = decoded_token.get("iat")
-            if exp and iat:
-                logger.debug(
-                    "Re-authenticated successfully with refresh token (Token expires at %s, issued at %s)",
-                    datetime.datetime.fromtimestamp(exp),
-                    datetime.datetime.fromtimestamp(iat),
-                )
-                sleep_time = (
-                    (exp - iat) - 3600  # Schedule 1 hour before expiration
-                )
-                logger.debug(
-                    "Scheduling next re-authentication in %d minutes",
-                    sleep_time // 60,
-                )
-                asyncio.create_task(
-                    self._authenticate_with_refresh_token(
-                        refresh_token=new_refresh_token, delay=sleep_time
-                    )
-                )
-
-            self.session.headers["Authorization"] = f"Bearer {new_token}"
-        except Exception as e:
-            logger.error("Failed to re-authenticate with refresh token: %s", str(e))
-            raise
-
-    def authenticate(
-        self,
-        username: str | None = None,
-        password: str | None = None,
-    ) -> bool:
-        """
-        Authenticates the client with the provided username and password.
-
-        Arguments:
-            username: The username to authenticate with.
-            password: The password to authenticate with.
-        """
-
-        if not (username and password):
-            raise ValueError(
-                "Username and password must be provided for authentication"
-            )
-
-        resp = httpx.request(
-            "POST",
-            "https://api.luduvo.com/auth/login",
-            json={"identifier": username, "password": password},
-        )
-        if resp.is_error:
-            if resp.status_code == 401:
-                raise Exception("Authentication failed: Invalid username or password")
-            raise get_exception_from_status_code(resp.status_code)(response=resp)
-        if "token" not in resp.json() and "refresh_token" not in resp.json():
-            raise Exception(
-                "Authentication failed: No token or refresh_token in response"
-            )
-        token = resp.json()["token"]
-        refresh_token = resp.json()["refresh_token"]
-
-        # Decode the token to extract user information
-        decoded_token = jwt.decode(token, options={"verify_signature": False})
-        exp = decoded_token.get("exp")
-        iat = decoded_token.get("iat")
-        if exp and iat:
-            logger.debug(
-                "Authenticated successfully with username: %s (Token expires at %s, issued at %s)",
-                username,
-                datetime.datetime.fromtimestamp(exp),
-                datetime.datetime.fromtimestamp(iat),
-            )
-            sleep_time = (exp - iat) - 3600  # Schedule 1 hour before expiration
-            logger.debug(
-                "Scheduling re-authentication in %d minutes",
-                sleep_time // 60,
-            )
-            asyncio.create_task(
-                self._authenticate_with_refresh_token(
-                    refresh_token=refresh_token, delay=sleep_time
-                )
-            )
-
-        self.session.headers["Authorization"] = f"Bearer {token}"
-        check_resp = httpx.get(
-            "https://api.luduvo.com/me/profile",
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        if check_resp.is_error:
-            raise get_exception_from_status_code(check_resp.status_code)(
-                response=check_resp
-            )
-        if check_resp.json().get("user_id") is None:
-            raise Exception("Authentication failed: No user ID in check response")
-        if check_resp.json().get("username") != username:
-            raise Exception(
-                "Authentication failed: Check response username did not match provided username"
-            )
-        logger.debug(
-            "Authenticated successfully with username: %s (ID: %s)",
-            username,
-            check_resp.json().get("user_id"),
-        )
-        self.authenticated = True
+    async def authenticate(self, username: str, password: str) -> bool:
+        """Log in without blocking the event loop."""
+        if not username or not password:
+            raise ValueError("Both username and password are required")
+        async with self._auth_lock:
+            await self._login(username, password)
         return True
 
+    async def _login(self, username, password):
+        response = await self._send("POST", self._auth_url("login"),
+                                    json={"identifier": username, "password": password})
+        self._set_tokens(response.json())
+        self._credentials = None
+
+    def _auth_url(self, action):
+        return f"https://api.{self.base_url}/auth/{action}"
+
+    def _set_tokens(self, data):
+        token, refresh = data.get("token"), data.get("refresh_token")
+        if not isinstance(token, str) or not token or not isinstance(refresh, str) or not refresh:
+            raise ValueError("Authentication response is missing tokens")
+        self.session.headers["Authorization"] = f"Bearer {token}"
+        self._refresh_token = refresh
+        self.authenticated = True
+        try:
+            claims = jwt.decode(token, options={"verify_signature": False})
+            self._expires_at = float(claims["exp"])
+        except (jwt.PyJWTError, KeyError, ValueError, TypeError):
+            self._expires_at = None
+
+    async def ensure_authenticated(self):
+        """Initialize deferred credentials and refresh expiring tokens on demand."""
+        async with self._auth_lock:
+            if self._credentials is not None:
+                await self._login(*self._credentials)
+            elif (self._refresh_token and self._expires_at is not None
+                  and self._expires_at <= datetime.datetime.now(datetime.timezone.utc).timestamp() + 10):
+                response = await self._send("POST", self._auth_url("refresh"),
+                                            json={"refresh_token": self._refresh_token})
+                self._set_tokens(response.json())
+
+    async def close(self):
+        self._credentials = None
+        self._refresh_token = None
+        self.authenticated = False
+        self.session.headers.pop("Authorization", None)
+        await self.session.aclose()
+
     async def request(self, method: str, *args, **kwargs) -> Response:
+        await self.ensure_authenticated()
+        return await self._send(method, *args, **kwargs)
+
+    async def _send(self, method: str, *args, **kwargs) -> Response:
         """
         Arguments:
             method: The request method.
@@ -249,7 +161,7 @@ class Requests:
                         "Failed to decode JSON error response from %s",
                         response.url,
                     )
-                errors = data and data.get("errors")
+                errors = data.get("errors") if isinstance(data, dict) else None
                 if errors:
                     logger.debug("Parsed error payload: %s", errors)
 
