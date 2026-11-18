@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 from .baseitem import BaseItem
 from ...utilities.iterators import AsyncPaginator
+from ..presence import Presence
+from ...utilities.resources import paginate
 
 if TYPE_CHECKING:
     from ...client import Client
@@ -33,6 +35,32 @@ class BaseUser(BaseItem):
 
         self.client = client
         self.id: int = user_id
+
+    async def get_presence(self) -> Presence:
+        response = await self.client.requests.get(
+            self.client.url_generator.get_url(f"users/{self.id}/presence")
+        )
+        return Presence.from_api(response.json(), self.id)
+
+    def groups(self, page_size: int = 50) -> AsyncPaginator:
+        """Iterate the groups this user belongs to."""
+        return self.client._groups(f"users/{self.id}/groups", page_size)
+
+    def usernames(self, page_size: int = 50):
+        return paginate(self.client, f"users/{self.id}/usernames", "items", page_size)
+
+    def places(self, page_size: int = 50):
+        return paginate(self.client, f"users/{self.id}/places", "places", page_size)
+
+    def inventory(self, page_size: int = 50):
+        return paginate(self.client, f"users/{self.id}/inventory", "items", page_size)
+
+    async def get_full_body_url(self) -> str | None:
+        response = await self.client.requests.get(
+            self.client.url_generator.get_url(f"users/{self.id}/avatar/full-body"),
+            follow_redirects=False,
+        )
+        return response.headers.get("Location")
 
     def friends(self, page_size: int = 50) -> AsyncPaginator["Friend"]:
         """Returns an async paginator over the user's friends.

@@ -9,6 +9,7 @@ import datetime
 from typing import TYPE_CHECKING
 
 from ..utilities.types import GroupAccess
+from .group_roles import GroupRole
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -39,6 +40,16 @@ class Group(BaseGroup):
         """
         super().__init__(client, data["id"])
 
+        self.is_owner: bool | None = data.get("is_owner")
+        self.is_member: bool | None = data.get("is_member")
+        self.can_manage: bool | None = data.get("can_manage")
+        self.my_permissions: int | None = data.get("my_permissions")
+        self.my_roles: list[GroupRole] | None = (
+            [GroupRole.from_api(role) for role in data["my_roles"]]
+            if data.get("my_roles") is not None else None
+        )
+        self.banner_url: str | None = data.get("banner_url")
+        self.owner_display_name: str | None = data.get("owner_display_name")
         self.name: str = data["name"]
         self.description: str = data["description"]
         self.owner_id: int = data["owner_id"]

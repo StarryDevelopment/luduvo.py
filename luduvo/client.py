@@ -1,7 +1,11 @@
 """Contains the main client class for interacting with the Luduvo API."""
 
 import logging
-from .classes import User, Place, Group
+from .utilities.resources import paginate, get_json
+from .classes.search import UserSearchResult
+from .classes.friends import Friend
+from .classes import User, Place, Group, BaseGroup, BaseUser, Presence
+from .utilities.iterators import AsyncPaginator
 from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound
 from .utilities.url import URLGenerator
 from .utilities.requests import Requests
@@ -236,6 +240,132 @@ class Client:
         group_data = group_response.json()
         logger.debug(f"Successfully retrieved group data for ID: {group_id}")
         return Group(client=self, data=group_data)
+
+    def _groups(self, path: str, page_size: int, **params) -> AsyncPaginator[Group]:
+        if page_size <= 0:
+            raise ValueError("page_size must be positive")
+
+        async def fetch_page(offset: int):
+            response = await self.requests.get(
+                self.url_generator.get_url(path),
+                params={**params, "limit": page_size, "offset": offset},
+            )
+            data = response.json()
+            return {"items": [Group(self, item) for item in data["groups"]],
+                    "total": data["total"]}
+
+        return AsyncPaginator(fetch_page)
+
+    def search_groups(self, query: str, page_size: int = 50) -> AsyncPaginator[Group]:
+        return self._groups("groups", page_size, q=query)
+
+    def get_my_groups(self, page_size: int = 50) -> AsyncPaginator[Group]:
+        return self._groups("me/groups", page_size)
+
+    def get_partial_group(self, group_id: int) -> BaseGroup:
+        return BaseGroup(self, group_id)
+
+    def get_partial_user(self, user_id: int) -> BaseUser:
+        return BaseUser(self, user_id)
+
+    async def get_presence(self, user_id: int) -> Presence:
+        return await self.get_partial_user(user_id).get_presence()
+
+    def search_users(self, query: str, page_size: int = 50):
+        return paginate(self, "users", "users", page_size, q=query,
+                        transform=lambda data: UserSearchResult(self, data))
+
+    def search_places(self, query: str, page_size: int = 50, *, sort=None):
+        params = {"q": query}
+        if sort is not None:
+            params["sort"] = sort
+        return paginate(self, "places", "places", page_size, **params)
+
+    def search_store(self, page_size: int = 50, *, sort=None, made_by=None):
+        params = {k: v for k, v in {"sort": sort, "made_by": made_by}.items()
+                  if v is not None}
+        return paginate(self, "store", "items", page_size, **params)
+
+    async def get_store_item(self, item_id: int):
+        return await get_json(self, f"store/{item_id}")
+
+    async def get_item_variants(self, item_id: int):
+        return (await get_json(self, f"items/{item_id}/variants"))["variants"]
+
+    async def get_store_categories(self):
+        return await get_json(self, "store/categories")
+
+    def my_inventory(self, page_size: int = 50):
+        return paginate(self, "me/inventory", "items", page_size)
+
+    def my_friends(self, page_size: int = 50):
+        return paginate(self, "me/friends", "friends", page_size,
+                        transform=lambda data: Friend(client=self, data=data))
+
+    def pending_friends(self, page_size: int = 50):
+        return paginate(self, "me/friends/pending", "requests", page_size)
+
+    def my_ignores(self, page_size: int = 50):
+        return paginate(self, "me/ignores", "items", page_size)
+
+    async def my_balance(self) -> int:
+        return (await get_json(self, "me/balance"))["balance"]
+
+    async def my_outfits(self):
+        return (await get_json(self, "me/outfits"))["outfits"]
+
+    def recently_played(self, page_size: int = 50):
+        return paginate(self, "me/recently-played", "places", page_size)
+
+    def conversations(self, page_size: int = 50):
+        return paginate(self, "me/conversations", "conversations", page_size)
+
+    async def conversation_messages(self, conversation_id: int, *, limit: int = 50):
+        if limit <= 0:
+            raise ValueError("limit must be positive")
+        return await get_json(self, f"conversations/{conversation_id}/messages", limit=limit)
+
+    async def trade_counts(self):
+        return await get_json(self, "me/trades/counts")
+
+    def trades(self, kind: str, page_size: int = 50):
+        if kind not in {"received", "sent", "history"}:
+            raise ValueError("Unknown trade kind")
+        return paginate(self, f"me/trades/{kind}", "trades", page_size)
+
+    async def site_banners(self):
+        return (await get_json(self, "site/banners"))["items"]
+
+    async def site_promos(self):
+        return (await get_json(self, "site/promos"))["items"]
+
+    async def get_presences(self, user_ids, *, batch_size: int = 50) -> list[Presence]:
+        """Fetch presence in batches; missing users are not treated as offline."""
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive")
+        ids = list(dict.fromkeys(int(user_id) for user_id in user_ids))
+        result = []
+        for offset in range(0, len(ids), batch_size):
+            batch = ids[offset:offset + batch_size]
+            data = await get_json(self, "users/presence",
+                                  ids=",".join(map(str, batch)))
+            result.extend(Presence.from_api(item) for item in data["presence"])
+        return result
+
+    async def discover_places(self, *, surface: str = "discover", limit: int = 20):
+        return await get_json(self, "places/discovery", surface=surface, limit=limit)
+
+    async def featured_events(self):
+        return (await get_json(self, "featured/events"))["items"]
+
+    async def official_messages(self, *, limit: int = 50):
+        return await get_json(self, "me/official-messages", limit=limit)
+
+    async def get_subscription(self):
+        return await get_json(self, "me/subscription")
+
+    async def pending_payments(self):
+        return (await get_json(self, "me/pending-payments"))["pending"]
 
     async def close(self):
         """

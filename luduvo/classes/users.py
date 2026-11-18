@@ -67,6 +67,15 @@ class User(BaseUser):
         self.networth = data.get("networth")
         self.tier = data.get("tier")
         self.is_owner = data.get("is_owner")
+        self.background_url = data.get("background_url")
+        self.wishlist_hidden = data.get("wishlist_hidden")
+        self.inventory_hidden = data.get("inventory_hidden")
+        self.friends_hidden = data.get("friends_hidden")
+        self.friendship_status = data.get("friendship_status")
+        self.viewer_ignores = data.get("viewer_ignores")
+        self.can_message = data.get("can_message")
+        self.mutual_count = data.get("mutual_count")
+        self.mutuals = data.get("mutuals")
         self.__client__ = client
 
     def __repr__(self):
