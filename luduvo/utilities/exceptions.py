@@ -39,7 +39,7 @@ class ResponseError:
     """
 
     def __init__(self, data: dict):
-        self.code: int = data["code"]
+        self.code = data.get("code")
         self.message: Optional[str] = data.get("message")
         self.user_facing_message: Optional[str] = data.get("userFacingMessage")
         self.field: Optional[str] = data.get("field")
@@ -70,20 +70,12 @@ class HTTPException(LuduvoException):
         self.status: int = response.status_code
         self.errors: List[ResponseError]
 
-        if errors:
-            self.errors = [ResponseError(data=error_data) for error_data in errors]
+        if isinstance(errors, list):
+            self.errors = [ResponseError(data=error_data) for error_data in errors if isinstance(error_data, dict)]
         else:
             self.errors = []
 
-        if self.errors:
-            error_string = self._generate_string()
-            super().__init__(
-                f"{response.status_code} {response.reason_phrase}: {response.url}.\n\nErrors:\n{error_string}"
-            )
-        else:
-            super().__init__(
-                f"{response.status_code} {response.reason_phrase}: {response.url}"
-            )
+        super().__init__(f"{response.status_code} {response.reason_phrase}")
 
     def _generate_string(self) -> str:
         parsed_errors = []
@@ -139,7 +131,9 @@ class TooManyRequests(HTTPException):
     This means that Luduvo has [ratelimited](https://en.wikipedia.org/wiki/Rate_limiting) you.
     """
 
-    pass
+    @property
+    def retry_after(self) -> str | None:
+        return self.response.headers.get("Retry-After")
 
 
 class InternalServerError(HTTPException):

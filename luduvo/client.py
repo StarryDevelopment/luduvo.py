@@ -27,7 +27,8 @@ class Client:
         authenticated: Whether the client is currently authenticated.
     """
 
-    def __init__(self, username=None, password=None, base_url="luduvo.com", *, token=None):
+    def __init__(self, username=None, password=None, base_url="luduvo.com", *, token=None,
+                 timeout=15.0, max_concurrency=4, max_retries=2, max_retry_after=60.0):
         """
         Initialize a Luduvo Client instance.
 
@@ -46,7 +47,9 @@ class Client:
         self._url_generator: URLGenerator = URLGenerator(base_url=base_url)
 
         self._requests = Requests(username=username, password=password,
-                                  base_url=base_url, token=token)
+                                  base_url=base_url, token=token, timeout=timeout,
+                                  max_concurrency=max_concurrency, max_retries=max_retries,
+                                  max_retry_after=max_retry_after)
         self.url_generator = self._url_generator
         self.requests = self._requests
 
