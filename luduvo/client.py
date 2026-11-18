@@ -339,6 +339,34 @@ class Client:
     async def site_promos(self):
         return (await get_json(self, "site/promos"))["items"]
 
+    async def get_presences(self, user_ids, *, batch_size: int = 50) -> list[Presence]:
+        """Fetch presence in batches; missing users are not treated as offline."""
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive")
+        ids = list(dict.fromkeys(int(user_id) for user_id in user_ids))
+        result = []
+        for offset in range(0, len(ids), batch_size):
+            batch = ids[offset:offset + batch_size]
+            data = await get_json(self, "users/presence",
+                                  ids=",".join(map(str, batch)))
+            result.extend(Presence.from_api(item) for item in data["presence"])
+        return result
+
+    async def discover_places(self, *, surface: str = "discover", limit: int = 20):
+        return await get_json(self, "places/discovery", surface=surface, limit=limit)
+
+    async def featured_events(self):
+        return (await get_json(self, "featured/events"))["items"]
+
+    async def official_messages(self, *, limit: int = 50):
+        return await get_json(self, "me/official-messages", limit=limit)
+
+    async def get_subscription(self):
+        return await get_json(self, "me/subscription")
+
+    async def pending_payments(self):
+        return (await get_json(self, "me/pending-payments"))["pending"]
+
     async def close(self):
         """
         Close the underlying HTTP session used by the client.

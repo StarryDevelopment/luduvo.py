@@ -64,6 +64,9 @@ class Member(MemberRelationship):
         self.group: BaseGroup = group
         self.roles = [GroupRole.from_api(role) for role in data.get("roles") or []]
         self.permissions: int | None = data.get("permissions")
+        self.headshot_url = data.get("headshot_url")
+        self.status = data.get("status")
+        self.banned = data.get("banned")
 
     def has_role(self, role_id: int) -> bool:
         """Check the roles in this membership snapshot."""

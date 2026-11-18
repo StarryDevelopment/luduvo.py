@@ -90,6 +90,16 @@ class BaseGroup(BaseItem):
     async def pending_transfer(self):
         return (await get_json(self._client, f"groups/{self.id}/transfer/pending"))["pending"]
 
+    async def post_wall(self, content: str, *, announcement: bool = False):
+        """Publish a group wall post using the authenticated account."""
+        if not content.strip():
+            raise ValueError("content must not be empty")
+        response = await self._client.requests.post(
+            self._client.url_generator.get_url(f"groups/{self.id}/wall"),
+            json={"content": content, "announcement": announcement},
+        )
+        return response.json()
+
     async def roles(self) -> list[GroupRole]:
         """Retrieve the group's available roles."""
         response = await self._client.requests.get(
