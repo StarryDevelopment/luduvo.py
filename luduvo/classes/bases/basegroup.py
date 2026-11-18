@@ -7,6 +7,7 @@ from luduvo.utilities.exceptions import UserNotMemberOfGroup, NotFound, MemberNo
 
 from .baseitem import BaseItem
 from ...utilities.iterators import AsyncPaginator
+from ..group_roles import GroupRole
 
 from typing import TYPE_CHECKING
 
@@ -37,6 +38,43 @@ class BaseGroup(BaseItem):
 
         self._client = client
         self.id: int = group_id
+
+    async def roles(self) -> list[GroupRole]:
+        """Retrieve the group's available roles."""
+        response = await self._client.requests.get(
+            self._client.url_generator.get_url(f"groups/{self.id}/roles")
+        )
+        return [GroupRole.from_api(role) for role in response.json()]
+
+    async def join(self) -> bool:
+        """Join the group using the authenticated account."""
+        response = await self._client.requests.post(
+            self._client.url_generator.get_url(f"groups/{self.id}/join")
+        )
+        return response.status_code == 204
+
+    async def leave(self) -> bool:
+        """Leave the group using the authenticated account."""
+        response = await self._client.requests.post(
+            self._client.url_generator.get_url(f"groups/{self.id}/leave")
+        )
+        return response.status_code == 204
+
+    async def add_member_role(self, user_id: int, role_id: int) -> bool:
+        response = await self._client.requests.post(
+            self._client.url_generator.get_url(
+                f"groups/{self.id}/members/{user_id}/roles/{role_id}"
+            )
+        )
+        return response.status_code == 204
+
+    async def remove_member_role(self, user_id: int, role_id: int) -> bool:
+        response = await self._client.requests.delete(
+            self._client.url_generator.get_url(
+                f"groups/{self.id}/members/{user_id}/roles/{role_id}"
+            )
+        )
+        return response.status_code == 204
 
     def members(self, page_size: int = 50) -> AsyncPaginator["Member"]:
         """
