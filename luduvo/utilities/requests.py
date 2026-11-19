@@ -6,6 +6,7 @@ This module contains classes used internally for sending requests to Luduvo endp
 
 from __future__ import annotations
 import asyncio
+from ..session import SessionTokens
 import jwt
 import datetime
 import time
@@ -43,11 +44,11 @@ class Requests:
 
     def __init__(
         self,
-        username: str | None = None,
-        password: str | None = None,
+        *,
         session: CleanAsyncClient | None = None,
         base_url: str = "luduvo.com",
         token: str | None = None,
+        refresh_token: str | None = None,
         timeout: float = 15.0,
         max_concurrency: int = 4,
         max_retries: int = 2,
@@ -73,43 +74,28 @@ class Requests:
         else:
             self.session = session
 
-        if bool(username) != bool(password):
-            raise ValueError("Both username and password are required")
-        if token and username:
-            raise ValueError("Choose credentials or token, not both")
         self.base_url = base_url
         self._auth_lock = asyncio.Lock()
-        self._credentials = (username, password) if username and password else None
-        self._refresh_token = None
+        self._tokens = None
         self._expires_at = None
+        if refresh_token and not token:
+            raise ValueError("An access token is required with a refresh token")
         if token:
-            self.session.headers["Authorization"] = f"Bearer {token}"
-            self.authenticated = True
+            self._set_tokens(token, refresh_token)
         self.session.headers["User-Agent"] = "Python/luduvo.py"
 
-    async def authenticate(self, username: str, password: str) -> bool:
-        """Log in without blocking the event loop."""
-        if not username or not password:
-            raise ValueError("Both username and password are required")
-        async with self._auth_lock:
-            await self._login(username, password)
-        return True
+    @property
+    def tokens(self) -> SessionTokens | None:
+        """Return the latest token pair. Treat both values as secrets."""
+        return self._tokens
 
-    async def _login(self, username, password):
-        response = await self._send("POST", self._auth_url("login"),
-                                    json={"identifier": username, "password": password})
-        self._set_tokens(response.json())
-        self._credentials = None
-
-    def _auth_url(self, action):
-        return f"https://api.{self.base_url}/auth/{action}"
-
-    def _set_tokens(self, data):
-        token, refresh = data.get("token"), data.get("refresh_token")
-        if not isinstance(token, str) or not token or not isinstance(refresh, str) or not refresh:
-            raise ValueError("Authentication response is missing tokens")
+    def _set_tokens(self, token, refresh):
+        if not isinstance(token, str) or not token:
+            raise ValueError("Missing access token")
+        if refresh is not None and (not isinstance(refresh, str) or not refresh):
+            raise ValueError("Invalid refresh token")
         self.session.headers["Authorization"] = f"Bearer {token}"
-        self._refresh_token = refresh
+        self._tokens = SessionTokens(token, refresh)
         self.authenticated = True
         try:
             claims = jwt.decode(token, options={"verify_signature": False})
@@ -117,20 +103,36 @@ class Requests:
         except (jwt.PyJWTError, KeyError, ValueError, TypeError):
             self._expires_at = None
 
-    async def ensure_authenticated(self):
-        """Initialize deferred credentials and refresh expiring tokens on demand."""
+    async def _refresh(self):
+        if self._tokens is None or not self._tokens.refresh_token:
+            raise ValueError("No refresh token configured")
+        response = await self._send(
+            "POST", f"https://api.{self.base_url}/auth/refresh",
+            headers={"Authorization": ""},
+            json={"refresh_token": self._tokens.refresh_token},
+        )
+        data = response.json()
+        if not data.get("refresh_token"):
+            raise ValueError("Refresh response is missing refresh_token")
+        self._set_tokens(data.get("token"), data["refresh_token"])
+        return self._tokens
+
+    async def refresh(self):
+        """Explicitly refresh an authorized session."""
         async with self._auth_lock:
-            if self._credentials is not None:
-                await self._login(*self._credentials)
-            elif (self._refresh_token and self._expires_at is not None
-                  and self._expires_at <= datetime.datetime.now(datetime.timezone.utc).timestamp() + 10):
-                response = await self._send("POST", self._auth_url("refresh"),
-                                            json={"refresh_token": self._refresh_token})
-                self._set_tokens(response.json())
+            return await self._refresh()
+
+    async def ensure_authenticated(self):
+        """Refresh an expiring session before a request."""
+        async with self._auth_lock:
+            if (self._tokens and self._tokens.refresh_token
+                    and self._expires_at is not None
+                    and self._expires_at <= time.time() + 10):
+                await self._refresh()
 
     async def close(self):
-        self._credentials = None
-        self._refresh_token = None
+        self._tokens = None
+        self._expires_at = None
         self.authenticated = False
         self.session.headers.pop("Authorization", None)
         await self.session.aclose()

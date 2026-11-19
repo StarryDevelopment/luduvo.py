@@ -9,6 +9,7 @@ from .utilities.iterators import AsyncPaginator
 from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound
 from .utilities.url import URLGenerator
 from .utilities.requests import Requests
+from .session import SessionTokens
 
 
 logger = logging.getLogger("luduvo")
@@ -27,27 +28,27 @@ class Client:
         authenticated: Whether the client is currently authenticated.
     """
 
-    def __init__(self, username=None, password=None, base_url="luduvo.com", *, token=None,
+    def __init__(self, *, base_url="luduvo.com", token=None, refresh_token=None,
                  timeout=15.0, max_concurrency=4, max_retries=2, max_retry_after=60.0):
         """
         Initialize a Luduvo Client instance.
 
         Args:
-            username (str, optional): Username used for authentication.
-            password (str, optional): Password used for authentication.
+            token (str, optional): Access token from an authorized session.
+            refresh_token (str, optional): Refresh token for that session.
             base_url (str, optional): Base URL for the Luduvo API.
 
         Example:
             ```python
-            client = Client(username="john", password="secret")
+            client = Client(token=access_token, refresh_token=refresh_token)
             ```
         """
         logger.debug("Initializing Client(base_url=%s)", base_url)
 
         self._url_generator: URLGenerator = URLGenerator(base_url=base_url)
 
-        self._requests = Requests(username=username, password=password,
-                                  base_url=base_url, token=token, timeout=timeout,
+        self._requests = Requests(base_url=base_url, token=token, refresh_token=refresh_token,
+                                  timeout=timeout,
                                   max_concurrency=max_concurrency, max_retries=max_retries,
                                   max_retry_after=max_retry_after)
         self.url_generator = self._url_generator
@@ -57,8 +58,13 @@ class Client:
     def authenticated(self) -> bool:
         return self.requests.authenticated
 
-    async def login(self, username: str, password: str) -> bool:
-        return await self.requests.authenticate(username, password)
+    @property
+    def tokens(self) -> SessionTokens | None:
+        """Current credentials, including any rotated refresh token."""
+        return self.requests.tokens
+
+    async def refresh(self) -> SessionTokens:
+        return await self.requests.refresh()
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
