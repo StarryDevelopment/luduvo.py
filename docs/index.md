@@ -29,3 +29,21 @@ python3 -m pip install git+https://github.com/StarryDevelopment/luduvo.py.git
 ```
 !!! Warning
     Do not install the unstable version in production environments, as it is untested and may contain breaking changes or bugs.
+
+## Authentication
+
+Public API requests do not require credentials. Password login has been
+removed because the website uses an interactive CAPTCHA. Use only
+authorized sessions obtained through supported platform mechanisms.
+
+```python
+import luduvo
+
+async with luduvo.Client(token=access_token, refresh_token=refresh_token) as client:
+    me = await client.get_authenticated_user()
+    # client.tokens contains the current pair, including rotated tokens.
+```
+
+Keep credentials in protected storage; never log them. OAuth2 identity
+verification uses the separate OAuth2Client. Token refresh requires a valid
+refresh token and is subject to the platform's authorization policy.

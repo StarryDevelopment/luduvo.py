@@ -27,3 +27,8 @@ Documentation = "https://starrydevelopment.github.io/luduvo.py/"
 Source = "https://github.com/StarryDevelopment/luduvo.py"
 Issues = "https://github.com/StarryDevelopment/luduvo.py/issues"
 
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["luduvo", "luduvo.*"]
+namespaces = false
