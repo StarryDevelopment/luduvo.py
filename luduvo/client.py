@@ -8,7 +8,7 @@ from .classes.search import UserSearchResult
 from .classes.friends import Friend
 from .classes import User, Place, Group, BaseGroup, BaseUser, Presence
 from .utilities.iterators import AsyncPaginator
-from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound
+from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound, LuduvoException
 from .utilities.url import URLGenerator
 from .utilities.requests import Requests
 from .session import SessionTokens, TokenRefreshCallback
@@ -187,7 +187,7 @@ class Client:
         """
         await self.requests.ensure_authenticated()
         if not self.authenticated:
-            raise Exception("Client is not authenticated.")
+            raise LuduvoException("Client is not authenticated.")
 
         logger.debug("Fetching authenticated user profile")
         try:

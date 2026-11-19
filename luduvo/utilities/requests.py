@@ -154,11 +154,13 @@ class Requests:
                     await self._refresh()
 
     async def close(self):
-        self._tokens = None
-        self._expires_at = None
-        self.authenticated = False
-        self.session.headers.pop("Authorization", None)
-        await self.session.aclose()
+        async with self._auth_lock:
+            await self._persist_tokens()
+            self._tokens = None
+            self._pending_persistence = False
+            self.authenticated = False
+            self.session.headers.pop("Authorization", None)
+            await self.session.aclose()
 
     async def request(self, method: str, *args, **kwargs) -> Response:
         await self.ensure_authenticated()
@@ -189,10 +191,11 @@ class Requests:
         for attempt in range(self._max_retries + 1):
             async with self._semaphore:
                 delay = self._blocked_until - time.monotonic()
-                if delay > self._max_retry_after:
-                    raise self._last_rate_limit
-                if delay > 0:
+                while delay > 0:
+                    if delay > self._max_retry_after:
+                        raise self._last_rate_limit
                     await asyncio.sleep(delay)
+                    delay = self._blocked_until - time.monotonic()
                 response = await self.session.request(method, *args, **kwargs)
                 if response.status_code == 429:
                     delay = self._retry_delay(response, attempt)

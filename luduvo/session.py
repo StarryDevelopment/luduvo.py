@@ -7,6 +7,7 @@ import math
 import time
 
 import jwt
+from .utilities.exceptions import LuduvoException
 
 
 @dataclass(frozen=True)
@@ -96,5 +97,5 @@ class SessionTokens:
 TokenRefreshCallback = Callable[[SessionTokens], Awaitable[None]]
 
 
-class TokenPersistenceError(RuntimeError):
+class TokenPersistenceError(LuduvoException, RuntimeError):
     """Rotated credentials are in memory but could not be persisted."""
