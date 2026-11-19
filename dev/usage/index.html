@@ -1723,10 +1723,10 @@ a statement of the platform's allowed request rate.</p>
     <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">tokens</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">tokens</span><span class="o">.</span><span class="n">refresh_token</span><span class="p">)</span>
 
 <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
-    <span class="n">token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span> 
+    <span class="n">token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span>
     <span class="n">refresh_token</span><span class="o">=</span><span class="n">refresh_token</span><span class="p">,</span>
-    <span class="n">refresh_margin</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> 
-    <span class="n">on_token_refresh</span><span class="o">=</span><span class="n">save_tokens</span>
+    <span class="n">refresh_margin</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+    <span class="n">on_token_refresh</span><span class="o">=</span><span class="n">save_tokens</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>SessionTokens exposes unverified <code>claims</code>, UTC <code>issued_at</code> and <code>expires_at</code>,
