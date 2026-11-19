@@ -6,8 +6,7 @@ This module contains classes used internally for sending requests to Luduvo endp
 
 from __future__ import annotations
 import asyncio
-from ..session import SessionTokens
-import jwt
+from ..session import SessionTokens, TokenRefreshCallback, TokenPersistenceError
 import datetime
 import time
 import math
@@ -53,11 +52,18 @@ class Requests:
         max_concurrency: int = 4,
         max_retries: int = 2,
         max_retry_after: float = 60.0,
+        refresh_margin: float = 60.0,
+        on_token_refresh: TokenRefreshCallback | None = None,
     ):
         """
         Arguments:
             session: A custom session object to use for sending requests, compatible with httpx.AsyncClient.
         """
+        if not math.isfinite(refresh_margin) or refresh_margin < 0:
+            raise ValueError("refresh_margin must be finite and non-negative")
+        self._refresh_margin = refresh_margin
+        self._on_token_refresh = on_token_refresh
+        self._pending_persistence = False
         self.session: CleanAsyncClient
         self.authenticated: bool = False
 
@@ -77,7 +83,6 @@ class Requests:
         self.base_url = base_url
         self._auth_lock = asyncio.Lock()
         self._tokens = None
-        self._expires_at = None
         if refresh_token and not token:
             raise ValueError("An access token is required with a refresh token")
         if token:
@@ -97,11 +102,16 @@ class Requests:
         self.session.headers["Authorization"] = f"Bearer {token}"
         self._tokens = SessionTokens(token, refresh)
         self.authenticated = True
+    async def _persist_tokens(self) -> None:
+        if not self._pending_persistence:
+            return
         try:
-            claims = jwt.decode(token, options={"verify_signature": False})
-            self._expires_at = float(claims["exp"])
-        except (jwt.PyJWTError, KeyError, ValueError, TypeError):
-            self._expires_at = None
+            await self._on_token_refresh(self._tokens)
+        except Exception:
+            raise TokenPersistenceError(
+                "Token persistence failed; current credentials remain in client.tokens"
+            ) from None
+        self._pending_persistence = False
 
     async def _refresh(self):
         if self._tokens is None or not self._tokens.refresh_token:
@@ -115,20 +125,26 @@ class Requests:
         if not data.get("refresh_token"):
             raise ValueError("Refresh response is missing refresh_token")
         self._set_tokens(data.get("token"), data["refresh_token"])
+        self._pending_persistence = self._on_token_refresh is not None
+        await self._persist_tokens()
         return self._tokens
 
     async def refresh(self):
         """Explicitly refresh an authorized session."""
         async with self._auth_lock:
+            if self._pending_persistence:
+                await self._persist_tokens()
+                return self._tokens
             return await self._refresh()
 
     async def ensure_authenticated(self):
         """Refresh an expiring session before a request."""
         async with self._auth_lock:
-            if (self._tokens and self._tokens.refresh_token
-                    and self._expires_at is not None
-                    and self._expires_at <= time.time() + 10):
-                await self._refresh()
+            await self._persist_tokens()
+            if self._tokens and self._tokens.refresh_token:
+                remaining = self._tokens.expires_in
+                if remaining is not None and remaining <= self._refresh_margin:
+                    await self._refresh()
 
     async def close(self):
         self._tokens = None

@@ -11,7 +11,7 @@ from .utilities.iterators import AsyncPaginator
 from .utilities.exceptions import NotFound, UserNotFound, PlaceNotFound, GroupNotFound
 from .utilities.url import URLGenerator
 from .utilities.requests import Requests
-from .session import SessionTokens
+from .session import SessionTokens, TokenRefreshCallback
 
 
 logger = logging.getLogger("luduvo")
@@ -33,7 +33,8 @@ class Client:
     def __init__(self, *, base_url: str = "luduvo.com", token: str | None = None,
                  refresh_token: str | None = None, timeout: float = 15.0,
                  max_concurrency: int = 4, max_retries: int = 2,
-                 max_retry_after: float = 60.0) -> None:
+                 max_retry_after: float = 60.0, refresh_margin: float = 60.0,
+                 on_token_refresh: TokenRefreshCallback | None = None) -> None:
         """
         Initialize a Luduvo Client instance.
 
@@ -41,6 +42,8 @@ class Client:
             token (str, optional): Access token from an authorized session.
             refresh_token (str, optional): Refresh token for that session.
             base_url (str, optional): Base URL for the Luduvo API.
+            refresh_margin: Seconds before JWT expiration to refresh on demand.
+            on_token_refresh: Async callback to persist rotated credentials.
 
         Example:
             ```python
@@ -54,7 +57,8 @@ class Client:
         self._requests = Requests(base_url=base_url, token=token, refresh_token=refresh_token,
                                   timeout=timeout,
                                   max_concurrency=max_concurrency, max_retries=max_retries,
-                                  max_retry_after=max_retry_after)
+                                  max_retry_after=max_retry_after, refresh_margin=refresh_margin,
+                                  on_token_refresh=on_token_refresh)
         self.url_generator = self._url_generator
         self.requests = self._requests
 

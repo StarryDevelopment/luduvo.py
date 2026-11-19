@@ -83,3 +83,24 @@ returns a fallback, such as get_headshot_url. Only GET and HEAD are retried for
 selected transient HTTP statuses. Mutations are not automatically retried.
 Use bounded concurrency and respect server limits; the SDK defaults are not
 a statement of the platform's allowed request rate.
+
+## Token metadata and persistence
+
+```python
+async def save_tokens(tokens):
+    await storage.save(tokens.token, tokens.refresh_token)
+
+client = Client(token=access_token, refresh_token=refresh_token,
+                refresh_margin=60, on_token_refresh=save_tokens)
+```
+
+SessionTokens exposes unverified `claims`, UTC `issued_at` and `expires_at`,
+`expires_in` in seconds and `is_expired`. Unknown expiration returns None.
+Metadata must not be used to authenticate users. Refresh occurs on demand,
+not in a background task. The callback runs under the refresh lock; do not
+call the same client from it. A failed callback raises TokenPersistenceError
+and retains the rotated pair in memory. The next request retries persistence
+before continuing. Calling refresh() while persistence is pending retries
+persistence instead of rotating again. Persist current tokens before closing;
+closing clears the in-memory pair. Coordinate refresh across processes and
+use atomic, idempotent protected storage.
