@@ -49,7 +49,7 @@ class OAuth2Client:
 
     def __init__(self, client_id: str, redirect_uri: str, *,
                  client_secret: str | None = None, timeout: float = 15,
-                 authorization_url: str = "https://luduvo.com/oauth/authorize",
+                 authorization_url: str = "https://api.luduvo.com/oauth/authorize",
                  transport: httpx.AsyncBaseTransport | None = None):
         self.client_id = client_id
         self.redirect_uri = redirect_uri
