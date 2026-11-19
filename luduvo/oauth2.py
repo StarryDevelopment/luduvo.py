@@ -1,7 +1,7 @@
 """Experimental OAuth2 authorization-code integration for Luduvo.
 
-The endpoint contract is based on community documentation, not a verified
-official specification. Keep OAuth tokens separate from account credentials.
+The authorization-code flow has been smoke-tested against the live API.
+This is not an official specification. Keep OAuth tokens separate from account credentials.
 """
 import base64
 import hashlib

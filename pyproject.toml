@@ -32,3 +32,6 @@ Issues = "https://github.com/StarryDevelopment/luduvo.py/issues"
 where = ["."]
 include = ["luduvo", "luduvo.*"]
 namespaces = false
+
+[tool.setuptools.package-data]
+luduvo = ["py.typed"]

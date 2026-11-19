@@ -4,7 +4,7 @@ site_name: luduvo.py
 site_url: https://starrydevelopment.github.io/luduvo.py/
 repo_name: StarryDevelopment/luduvo.py
 repo_url: https://github.com/StarryDevelopment/luduvo.py
-edit_uri: edit/main/docs/
+edit_uri: edit/master/docs/
 
 theme:
   name: material

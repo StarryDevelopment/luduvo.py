@@ -1,14 +1,19 @@
 """This module is used internally to provide utilities for iterating over paginated endpoints."""
 
-from typing import Callable, AsyncIterator, TypeVar, Generic, Awaitable
+from typing import Callable, AsyncIterator, TypeVar, Generic, Awaitable, TypedDict
 
 T = TypeVar("T")
 
 
+class Page(TypedDict, Generic[T]):
+    items: list[T]
+    total: int
+
+
 class AsyncPaginator(Generic[T]):
-    def __init__(self, fetch_page: Callable[[int], Awaitable[dict]]):
+    def __init__(self, fetch_page: Callable[[int], Awaitable[Page[T]]]):
         self._fetch_page = fetch_page
-        self._limit = None
+        self._limit: int | None = None
 
     def limit(self, value: int) -> "AsyncPaginator[T]":
         if value < 0:
