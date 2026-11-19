@@ -12,6 +12,7 @@ from ..group_metrics import GroupMetrics
 from ...utilities.resources import paginate, get_json
 
 from typing import TYPE_CHECKING
+from ...models import JSONObject, JSONValue
 
 if TYPE_CHECKING:
     from ...client import Client
@@ -49,37 +50,26 @@ class BaseGroup(BaseItem):
         )
         return GroupMetrics.from_api(response.json())
 
-    def _paginate(self, resource: str, key: str, page_size: int) -> AsyncPaginator[dict]:
-        if page_size <= 0:
-            raise ValueError("page_size must be positive")
+    def _paginate(self, resource: str, key: str, page_size: int) -> AsyncPaginator[JSONObject]:
+        return paginate(self._client, f"groups/{self.id}/{resource}", key, page_size)
 
-        async def fetch_page(offset: int):
-            response = await self._client.requests.get(
-                self._client.url_generator.get_url(f"groups/{self.id}/{resource}"),
-                params={"limit": page_size, "offset": offset},
-            )
-            data = response.json()
-            return {"items": data[key], "total": data["total"]}
-
-        return AsyncPaginator(fetch_page)
-
-    def bans(self, page_size: int = 50) -> AsyncPaginator[dict]:
+    def bans(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         """Iterate raw ban records."""
         return self._paginate("bans", "bans", page_size)
 
-    def announcements(self, page_size: int = 50) -> AsyncPaginator[dict]:
+    def announcements(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return self._paginate("announcements", "announcements", page_size)
 
-    def wall_posts(self, page_size: int = 50) -> AsyncPaginator[dict]:
+    def wall_posts(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return self._paginate("wall", "posts", page_size)
 
-    def places(self, page_size: int = 50) -> AsyncPaginator[dict]:
+    def places(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return self._paginate("places", "places", page_size)
 
-    def store_items(self, page_size: int = 50) -> AsyncPaginator[dict]:
+    def store_items(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return self._paginate("store", "items", page_size)
 
-    def funds(self, page_size: int = 50):
+    def funds(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         """Iterate group ledger entries (requires appropriate permissions)."""
         return paginate(self._client, f"groups/{self.id}/funds", "entries", page_size)
 
@@ -87,10 +77,10 @@ class BaseGroup(BaseItem):
         data = await get_json(self._client, f"groups/{self.id}/funds", limit=1, offset=0)
         return data["balance_earned"]
 
-    async def pending_transfer(self):
+    async def pending_transfer(self) -> JSONValue:
         return (await get_json(self._client, f"groups/{self.id}/transfer/pending"))["pending"]
 
-    async def post_wall(self, content: str, *, announcement: bool = False):
+    async def post_wall(self, content: str, *, announcement: bool = False) -> JSONObject:
         """Publish a group wall post using the authenticated account."""
         if not content.strip():
             raise ValueError("content must not be empty")
@@ -167,26 +157,8 @@ class BaseGroup(BaseItem):
 
         from ..members import Member
 
-        async def fetch_page(offset: int):
-            response = await self._client.requests.get(
-                url=self._client.url_generator.get_url(
-                    f"groups/{self.id}/members", "api"
-                ),
-                params={"limit": page_size, "offset": offset},
-            )
-
-            response.raise_for_status()
-            data = response.json()
-
-            return {
-                "items": [
-                    Member.from_api(self._client, m, self)
-                    for m in data.get("members", [])
-                ],
-                "total": data.get("total", 0),
-            }
-
-        return AsyncPaginator(fetch_page)
+        return paginate(self._client, f"groups/{self.id}/members", "members",
+                        page_size, transform=lambda data: Member.from_api(self._client, data, self))
 
     async def get_member(self, user_id: int) -> Member:
         """
@@ -327,3 +299,14 @@ class BaseGroup(BaseItem):
             raise MemberNotBanned(
                 message="Member not banned.", response=exception.response
             ) from None
+
+    get_metrics = metrics
+    get_roles = roles
+    get_pending_transfer = pending_transfer
+    iter_members = members
+    iter_bans = bans
+    iter_announcements = announcements
+    iter_wall_posts = wall_posts
+    iter_places = places
+    iter_store_items = store_items
+    iter_funds = funds
