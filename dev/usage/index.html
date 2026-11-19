@@ -1655,11 +1655,13 @@
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">luduvo</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
+
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">Client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
         <span class="n">user</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get_user_by_username</span><span class="p">(</span><span class="s2">"example"</span><span class="p">)</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">iter_groups</span><span class="p">()</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
@@ -1720,8 +1722,12 @@ a statement of the platform's allowed request rate.</p>
 <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">save_tokens</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
     <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">tokens</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">tokens</span><span class="o">.</span><span class="n">refresh_token</span><span class="p">)</span>
 
-<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span> <span class="n">refresh_token</span><span class="o">=</span><span class="n">refresh_token</span><span class="p">,</span>
-                <span class="n">refresh_margin</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">on_token_refresh</span><span class="o">=</span><span class="n">save_tokens</span><span class="p">)</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+    <span class="n">token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span> 
+    <span class="n">refresh_token</span><span class="o">=</span><span class="n">refresh_token</span><span class="p">,</span>
+    <span class="n">refresh_margin</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> 
+    <span class="n">on_token_refresh</span><span class="o">=</span><span class="n">save_tokens</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>SessionTokens exposes unverified <code>claims</code>, UTC <code>issued_at</code> and <code>expires_at</code>,
 <code>expires_in</code> in seconds and <code>is_expired</code>. Unknown expiration returns None.
