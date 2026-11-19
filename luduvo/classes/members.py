@@ -3,8 +3,6 @@ This module contains classes intended to parse and deal with data from Luduvo gr
 
 """
 
-from luduvo.utilities.exceptions import NotFound, UserNotMemberOfGroup, MemberNotBanned
-
 from typing import Union, TYPE_CHECKING
 import datetime
 
@@ -113,20 +111,8 @@ class Member(MemberRelationship):
             ```
         """
 
-        try:
-            response = await self.client.requests.post(
-                url=self.client.url_generator.get_url(
-                    f"groups/{self.group.id}/kick/{self.id}"
-                )
-            )
-            if response.status_code == 204:
-                return True
-            else:
-                return False
-        except NotFound as exception:
-            raise UserNotMemberOfGroup(
-                message="User not member of group.", response=exception.response
-            ) from None
+        return await self.group.kick_member(self.id)
+
 
     async def ban(self, reason: str | None = None) -> bool:
         """
@@ -150,21 +136,8 @@ class Member(MemberRelationship):
             ```
         """
 
-        try:
-            response = await self.client.requests.post(
-                url=self.client.url_generator.get_url(
-                    f"groups/{self.group.id}/ban/{self.id}"
-                ),
-                data={"reason": reason},
-            )
-            if response.status_code == 204:
-                return True
-            else:
-                return False
-        except NotFound as exception:
-            raise UserNotMemberOfGroup(
-                message="User not member of group.", response=exception.response
-            ) from None
+        return await self.group.ban_member(self.id, reason=reason)
+
 
     async def unban(self) -> bool:
         """
@@ -184,17 +157,5 @@ class Member(MemberRelationship):
             ```
         """
 
-        try:
-            response = await self.client.requests.delete(
-                url=self.client.url_generator.get_url(
-                    f"groups/{self.group.id}/bans/{self.id}"
-                )
-            )
-            if response.status_code == 204:
-                return True
-            else:
-                return False
-        except NotFound as exception:
-            raise MemberNotBanned(
-                message="Member is not banned.", response=exception.response
-            ) from None
+        return await self.group.unban_member(self.id)
+

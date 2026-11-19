@@ -290,9 +290,10 @@ class BaseGroup(BaseItem):
                 return True
             else:
                 return False
-        except Exception as e:
-            print(e)
-            return False
+        except NotFound as exception:
+            raise UserNotMemberOfGroup(
+                message="User not member of group.", response=exception.response
+            ) from None
 
     async def unban_member(self, user_id: int) -> bool:
         """
