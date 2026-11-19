@@ -12,7 +12,7 @@ description = "Python wrapper for Luduvo API"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    {name="TheSkout001", email="me@theskout001.ru"}
+    {name="Moritonic", email="moritonic@gmail.com"}
 ]
 dependencies = ["httpx>=0.24", "pyjwt>=2.12.1"]
 classifiers = [
