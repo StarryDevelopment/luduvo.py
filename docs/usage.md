@@ -93,11 +93,12 @@ async def save_tokens(tokens):
     await storage.save(tokens.token, tokens.refresh_token)
 
 client = Client(
-    token=access_token, 
+    token=access_token,
     refresh_token=refresh_token,
-    refresh_margin=60, 
-    on_token_refresh=save_tokens
+    refresh_margin=60,
+    on_token_refresh=save_tokens,
 )
+
 ```
 
 SessionTokens exposes unverified `claims`, UTC `issued_at` and `expires_at`,
