@@ -1,4 +1,5 @@
 """Account credentials and unverified JWT metadata."""
+
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from collections.abc import Awaitable, Callable
@@ -11,6 +12,7 @@ import jwt
 @dataclass(frozen=True)
 class TokenClaims:
     """Unverified metadata, never proof of identity or permissions."""
+
     user_id: int | None = None
     username: str | None = None
     role: str | None = None
@@ -46,8 +48,14 @@ class TokenClaims:
             except (OverflowError, OSError, ValueError):
                 return None
 
-        return cls(integer("user_id"), string("username"), string("role"),
-                   integer("token_version"), timestamp("exp"), timestamp("iat"))
+        return cls(
+            integer("user_id"),
+            string("username"),
+            string("role"),
+            integer("token_version"),
+            timestamp("exp"),
+            timestamp("iat"),
+        )
 
 
 @dataclass(frozen=True)

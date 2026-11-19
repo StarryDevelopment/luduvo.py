@@ -93,8 +93,13 @@ class BaseUser(BaseItem):
 
         from ..friends import Friend
 
-        return paginate(self.client, f"users/{self.id}/friends", "friends",
-                        page_size, transform=lambda data: Friend(client=self.client, data=data))
+        return paginate(
+            self.client,
+            f"users/{self.id}/friends",
+            "friends",
+            page_size,
+            transform=lambda data: Friend(client=self.client, data=data),
+        )
 
     async def get_headshot_url(self) -> str | None:
         """Gets the user's headshot url.

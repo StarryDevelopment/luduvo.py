@@ -11,9 +11,18 @@ from luduvo.utilities.requests import Requests
 
 
 def token(exp):
-    return jwt.encode({"user_id": 42, "username": "test", "role": "player",
-                       "token_version": 1, "iat": int(time.time()), "exp": exp},
-                      "mock-test-key-not-a-real-secret-123", algorithm="HS256")
+    return jwt.encode(
+        {
+            "user_id": 42,
+            "username": "test",
+            "role": "player",
+            "token_version": 1,
+            "iat": int(time.time()),
+            "exp": exp,
+        },
+        "mock-test-key-not-a-real-secret-123",
+        algorithm="HS256",
+    )
 
 
 class SessionTests(unittest.IsolatedAsyncioTestCase):
@@ -30,13 +39,19 @@ class SessionTests(unittest.IsolatedAsyncioTestCase):
     async def test_concurrent_refresh(self):
         calls = []
         new = token(int(time.time()) + 3600)
+
         def handler(request):
             calls.append(request.url.path)
             return httpx.Response(200, json={"token": new, "refresh_token": "new"})
+
         callback = AsyncMock()
         session = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-        requests = Requests(token=token(int(time.time()) + 30), refresh_token="old",
-                            session=session, on_token_refresh=callback)
+        requests = Requests(
+            token=token(int(time.time()) + 30),
+            refresh_token="old",
+            session=session,
+            on_token_refresh=callback,
+        )
         try:
             await asyncio.gather(*(requests.ensure_authenticated() for _ in range(5)))
             self.assertEqual(calls, ["/auth/refresh"])
@@ -46,14 +61,25 @@ class SessionTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_persistence_failure(self):
         calls = []
+
         def handler(request):
             calls.append(request.url.path)
-            return httpx.Response(200, json={"token": token(int(time.time()) + 3600),
-                                             "refresh_token": "rotated"})
+            return httpx.Response(
+                200,
+                json={
+                    "token": token(int(time.time()) + 3600),
+                    "refresh_token": "rotated",
+                },
+            )
+
         callback = AsyncMock(side_effect=[RuntimeError("storage failed"), None])
         session = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-        requests = Requests(token="old", refresh_token="old-refresh", session=session,
-                            on_token_refresh=callback)
+        requests = Requests(
+            token="old",
+            refresh_token="old-refresh",
+            session=session,
+            on_token_refresh=callback,
+        )
         try:
             with self.assertRaises(TokenPersistenceError):
                 await requests.refresh()

@@ -48,10 +48,16 @@ class OAuthUser:
 class OAuth2Client:
     """Independent async OAuth client; state storage belongs to the application."""
 
-    def __init__(self, client_id: str, redirect_uri: str, *,
-                 client_secret: str | None = None, timeout: float = 15,
-                 authorization_url: str = "https://api.luduvo.com/oauth/authorize",
-                 transport: httpx.AsyncBaseTransport | None = None):
+    def __init__(
+        self,
+        client_id: str,
+        redirect_uri: str,
+        *,
+        client_secret: str | None = None,
+        timeout: float = 15,
+        authorization_url: str = "https://api.luduvo.com/oauth/authorize",
+        transport: httpx.AsyncBaseTransport | None = None,
+    ):
         self.client_id = client_id
         self.redirect_uri = redirect_uri
         self._client_secret = client_secret

@@ -50,7 +50,9 @@ class BaseGroup(BaseItem):
         )
         return GroupMetrics.from_api(response.json())
 
-    def _paginate(self, resource: str, key: str, page_size: int) -> AsyncPaginator[JSONObject]:
+    def _paginate(
+        self, resource: str, key: str, page_size: int
+    ) -> AsyncPaginator[JSONObject]:
         return paginate(self._client, f"groups/{self.id}/{resource}", key, page_size)
 
     def bans(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
@@ -80,9 +82,13 @@ class BaseGroup(BaseItem):
         return data["balance_earned"]
 
     async def pending_transfer(self) -> JSONValue:
-        return (await get_json(self._client, f"groups/{self.id}/transfer/pending"))["pending"]
+        return (await get_json(self._client, f"groups/{self.id}/transfer/pending"))[
+            "pending"
+        ]
 
-    async def post_wall(self, content: str, *, announcement: bool = False) -> JSONObject:
+    async def post_wall(
+        self, content: str, *, announcement: bool = False
+    ) -> JSONObject:
         """Publish a group wall post using the authenticated account."""
         if not content.strip():
             raise ValueError("content must not be empty")
@@ -159,8 +165,13 @@ class BaseGroup(BaseItem):
 
         from ..members import Member
 
-        return paginate(self._client, f"groups/{self.id}/members", "members",
-                        page_size, transform=lambda data: Member.from_api(self._client, data, self))
+        return paginate(
+            self._client,
+            f"groups/{self.id}/members",
+            "members",
+            page_size,
+            transform=lambda data: Member.from_api(self._client, data, self),
+        )
 
     async def get_member(self, user_id: int) -> Member:
         """

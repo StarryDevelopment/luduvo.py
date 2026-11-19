@@ -107,6 +107,7 @@ class Requests:
         self.session.headers["Authorization"] = f"Bearer {token}"
         self._tokens = SessionTokens(token, refresh)
         self.authenticated = True
+
     async def _persist_tokens(self) -> None:
         if not self._pending_persistence:
             return

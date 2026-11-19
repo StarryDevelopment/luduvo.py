@@ -30,11 +30,19 @@ class Client:
         authenticated: Whether the client is currently authenticated.
     """
 
-    def __init__(self, *, base_url: str = "luduvo.com", token: str | None = None,
-                 refresh_token: str | None = None, timeout: float = 15.0,
-                 max_concurrency: int = 4, max_retries: int = 2,
-                 max_retry_after: float = 60.0, refresh_margin: float = 60.0,
-                 on_token_refresh: TokenRefreshCallback | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        base_url: str = "luduvo.com",
+        token: str | None = None,
+        refresh_token: str | None = None,
+        timeout: float = 15.0,
+        max_concurrency: int = 4,
+        max_retries: int = 2,
+        max_retry_after: float = 60.0,
+        refresh_margin: float = 60.0,
+        on_token_refresh: TokenRefreshCallback | None = None,
+    ) -> None:
         """
         Initialize a Luduvo Client instance.
 
@@ -54,11 +62,17 @@ class Client:
 
         self._url_generator: URLGenerator = URLGenerator(base_url=base_url)
 
-        self._requests = Requests(base_url=base_url, token=token, refresh_token=refresh_token,
-                                  timeout=timeout,
-                                  max_concurrency=max_concurrency, max_retries=max_retries,
-                                  max_retry_after=max_retry_after, refresh_margin=refresh_margin,
-                                  on_token_refresh=on_token_refresh)
+        self._requests = Requests(
+            base_url=base_url,
+            token=token,
+            refresh_token=refresh_token,
+            timeout=timeout,
+            max_concurrency=max_concurrency,
+            max_retries=max_retries,
+            max_retry_after=max_retry_after,
+            refresh_margin=refresh_margin,
+            on_token_refresh=on_token_refresh,
+        )
         self.url_generator = self._url_generator
         self.requests = self._requests
 
@@ -258,9 +272,17 @@ class Client:
         logger.debug(f"Successfully retrieved group data for ID: {group_id}")
         return Group(client=self, data=group_data)
 
-    def _groups(self, path: str, page_size: int, **params: str | int) -> AsyncPaginator[Group]:
-        return paginate(self, path, "groups", page_size,
-                        transform=lambda data: Group(self, data), **params)
+    def _groups(
+        self, path: str, page_size: int, **params: str | int
+    ) -> AsyncPaginator[Group]:
+        return paginate(
+            self,
+            path,
+            "groups",
+            page_size,
+            transform=lambda data: Group(self, data),
+            **params,
+        )
 
     def search_groups(self, query: str, page_size: int = 50) -> AsyncPaginator[Group]:
         return self._groups("groups", page_size, q=query)
@@ -277,19 +299,36 @@ class Client:
     async def get_presence(self, user_id: int) -> Presence:
         return await self.get_partial_user(user_id).get_presence()
 
-    def search_users(self, query: str, page_size: int = 50) -> AsyncPaginator[UserSearchResult]:
-        return paginate(self, "users", "users", page_size, q=query,
-                        transform=lambda data: UserSearchResult(self, data))
+    def search_users(
+        self, query: str, page_size: int = 50
+    ) -> AsyncPaginator[UserSearchResult]:
+        return paginate(
+            self,
+            "users",
+            "users",
+            page_size,
+            q=query,
+            transform=lambda data: UserSearchResult(self, data),
+        )
 
-    def search_places(self, query: str, page_size: int = 50, *, sort: str | None = None) -> AsyncPaginator[JSONObject]:
+    def search_places(
+        self, query: str, page_size: int = 50, *, sort: str | None = None
+    ) -> AsyncPaginator[JSONObject]:
         params = {"q": query}
         if sort is not None:
             params["sort"] = sort
         return paginate(self, "places", "places", page_size, **params)
 
-    def search_store(self, page_size: int = 50, *, sort: str | None = None, made_by: str | int | None = None) -> AsyncPaginator[JSONObject]:
-        params = {k: v for k, v in {"sort": sort, "made_by": made_by}.items()
-                  if v is not None}
+    def search_store(
+        self,
+        page_size: int = 50,
+        *,
+        sort: str | None = None,
+        made_by: str | int | None = None,
+    ) -> AsyncPaginator[JSONObject]:
+        params = {
+            k: v for k, v in {"sort": sort, "made_by": made_by}.items() if v is not None
+        }
         return paginate(self, "store", "items", page_size, **params)
 
     async def get_store_item(self, item_id: int) -> JSONObject:
@@ -305,8 +344,13 @@ class Client:
         return paginate(self, "me/inventory", "items", page_size)
 
     def my_friends(self, page_size: int = 50) -> AsyncPaginator[Friend]:
-        return paginate(self, "me/friends", "friends", page_size,
-                        transform=lambda data: Friend(client=self, data=data))
+        return paginate(
+            self,
+            "me/friends",
+            "friends",
+            page_size,
+            transform=lambda data: Friend(client=self, data=data),
+        )
 
     def pending_friends(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return paginate(self, "me/friends/pending", "requests", page_size)
@@ -326,7 +370,9 @@ class Client:
     def conversations(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return paginate(self, "me/conversations", "conversations", page_size)
 
-    async def conversation_messages(self, conversation_id: int, *, limit: int = 50) -> JSONObject:
+    async def conversation_messages(
+        self, conversation_id: int, *, limit: int = 50
+    ) -> JSONObject:
         if limit <= 0:
             raise ValueError("limit must be positive")
         return await get_json(
@@ -336,7 +382,9 @@ class Client:
     async def trade_counts(self) -> JSONObject:
         return await get_json(self, "me/trades/counts")
 
-    def trades(self, kind: TradeKind, page_size: int = 50) -> AsyncPaginator[JSONObject]:
+    def trades(
+        self, kind: TradeKind, page_size: int = 50
+    ) -> AsyncPaginator[JSONObject]:
         if kind not in {"received", "sent", "history"}:
             raise ValueError("Unknown trade kind")
         return paginate(self, f"me/trades/{kind}", "trades", page_size)
@@ -347,7 +395,9 @@ class Client:
     async def site_promos(self) -> list[JSONValue]:
         return (await get_json(self, "site/promos"))["items"]
 
-    async def get_presences(self, user_ids: Iterable[int], *, batch_size: int = 50) -> list[Presence]:
+    async def get_presences(
+        self, user_ids: Iterable[int], *, batch_size: int = 50
+    ) -> list[Presence]:
         """Fetch presence in batches; missing users are not treated as offline."""
         if batch_size <= 0:
             raise ValueError("batch_size must be positive")
@@ -359,7 +409,9 @@ class Client:
             result.extend(Presence.from_api(item) for item in data["presence"])
         return result
 
-    async def discover_places(self, *, surface: str = "discover", limit: int = 20) -> JSONObject:
+    async def discover_places(
+        self, *, surface: str = "discover", limit: int = 20
+    ) -> JSONObject:
         return await get_json(self, "places/discovery", surface=surface, limit=limit)
 
     async def featured_events(self) -> list[JSONValue]:
