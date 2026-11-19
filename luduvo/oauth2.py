@@ -11,9 +11,10 @@ from dataclasses import dataclass, field
 from urllib.parse import urlencode
 
 import httpx
+from .utilities.exceptions import LuduvoException
 
 
-class OAuth2Error(Exception):
+class OAuth2Error(LuduvoException):
     """OAuth flow failed without including sensitive response data."""
 
 

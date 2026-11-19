@@ -17,3 +17,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install .
       - run: python -m unittest discover -s tests -v
+      - run: python -m compileall -q luduvo
+  package-and-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install . build twine mkdocs-material mkdocs-section-index mkdocstrings-python mkdocs-literate-nav mkdocs-gen-files mkdocs-autorefs mike
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - run: mkdocs build --strict
