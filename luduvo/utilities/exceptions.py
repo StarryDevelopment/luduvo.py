@@ -71,7 +71,11 @@ class HTTPException(LuduvoException):
         self.errors: List[ResponseError]
 
         if isinstance(errors, list):
-            self.errors = [ResponseError(data=error_data) for error_data in errors if isinstance(error_data, dict)]
+            self.errors = [
+                ResponseError(data=error_data)
+                for error_data in errors
+                if isinstance(error_data, dict)
+            ]
         else:
             self.errors = []
 

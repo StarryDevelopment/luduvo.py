@@ -1,4 +1,5 @@
 """Lightweight user search results."""
+
 from .bases.baseuser import BaseUser
 
 

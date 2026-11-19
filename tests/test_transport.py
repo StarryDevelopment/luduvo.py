@@ -15,7 +15,9 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
                 return httpx.Response(429, headers={"Retry-After": "0"})
             return httpx.Response(200, json={})
 
-        requests = Requests(session=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+        requests = Requests(
+            session=httpx.AsyncClient(transport=httpx.MockTransport(handler))
+        )
         try:
             await requests.get("https://api.luduvo.com/test")
             self.assertEqual(calls, ["GET", "GET"])
@@ -29,7 +31,9 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
             calls.append(request.method)
             return httpx.Response(429, headers={"Retry-After": "0"})
 
-        requests = Requests(session=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+        requests = Requests(
+            session=httpx.AsyncClient(transport=httpx.MockTransport(handler))
+        )
         try:
             with self.assertRaises(TooManyRequests):
                 await requests.post("https://api.luduvo.com/test")

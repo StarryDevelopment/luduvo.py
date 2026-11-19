@@ -17,7 +17,6 @@ authors = [
 dependencies = ["httpx>=0.24", "pyjwt>=2.12.1"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha",
 ]

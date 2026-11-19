@@ -113,7 +113,6 @@ class Member(MemberRelationship):
 
         return await self.group.kick_member(self.id)
 
-
     async def ban(self, reason: str | None = None) -> bool:
         """
         Ban a member from the group.
@@ -138,7 +137,6 @@ class Member(MemberRelationship):
 
         return await self.group.ban_member(self.id, reason=reason)
 
-
     async def unban(self) -> bool:
         """
         Unban a member from the group.
@@ -158,4 +156,3 @@ class Member(MemberRelationship):
         """
 
         return await self.group.unban_member(self.id)
-

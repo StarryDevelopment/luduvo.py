@@ -22,7 +22,9 @@ class ModerationTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_ban_json_and_error_propagation(self):
         client = Mock()
-        client.url_generator.get_url.return_value = "https://api.luduvo.com/groups/1/ban/42"
+        client.url_generator.get_url.return_value = (
+            "https://api.luduvo.com/groups/1/ban/42"
+        )
         client.requests.post = AsyncMock(return_value=httpx.Response(204))
         group = BaseGroup(client, 1)
         self.assertTrue(await group.ban_member(42, "test"))

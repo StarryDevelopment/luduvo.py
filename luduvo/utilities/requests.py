@@ -61,7 +61,12 @@ class Requests:
         self.session: CleanAsyncClient
         self.authenticated: bool = False
 
-        if max_concurrency < 1 or max_retries < 0 or not math.isfinite(max_retry_after) or max_retry_after < 0:
+        if (
+            max_concurrency < 1
+            or max_retries < 0
+            or not math.isfinite(max_retry_after)
+            or max_retry_after < 0
+        ):
             raise ValueError("Invalid transport limits")
         self._semaphore = asyncio.Semaphore(max_concurrency)
         self._max_retries = max_retries
@@ -107,7 +112,8 @@ class Requests:
         if self._tokens is None or not self._tokens.refresh_token:
             raise ValueError("No refresh token configured")
         response = await self._send(
-            "POST", f"https://api.{self.base_url}/auth/refresh",
+            "POST",
+            f"https://api.{self.base_url}/auth/refresh",
             headers={"Authorization": ""},
             json={"refresh_token": self._tokens.refresh_token},
         )
@@ -125,9 +131,12 @@ class Requests:
     async def ensure_authenticated(self):
         """Refresh an expiring session before a request."""
         async with self._auth_lock:
-            if (self._tokens and self._tokens.refresh_token
-                    and self._expires_at is not None
-                    and self._expires_at <= time.time() + 10):
+            if (
+                self._tokens
+                and self._tokens.refresh_token
+                and self._expires_at is not None
+                and self._expires_at <= time.time() + 10
+            ):
                 await self._refresh()
 
     async def close(self):
@@ -173,8 +182,12 @@ class Requests:
                 response = await self.session.request(method, *args, **kwargs)
                 if response.status_code == 429:
                     delay = self._retry_delay(response, attempt)
-                    self._blocked_until = max(self._blocked_until, time.monotonic() + delay)
-                    self._last_rate_limit = get_exception_from_status_code(429)(response=response)
+                    self._blocked_until = max(
+                        self._blocked_until, time.monotonic() + delay
+                    )
+                    self._last_rate_limit = get_exception_from_status_code(429)(
+                        response=response
+                    )
             if method not in {"GET", "HEAD"} or attempt == self._max_retries:
                 break
             if response.status_code == 429:
@@ -224,10 +237,15 @@ class Requests:
             except ValueError:
                 try:
                     date = parsedate_to_datetime(value)
-                    return max(0.0, (date - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+                    return max(
+                        0.0,
+                        (
+                            date - datetime.datetime.now(datetime.timezone.utc)
+                        ).total_seconds(),
+                    )
                 except (ValueError, TypeError, OverflowError):
                     pass
-        return min(2 ** attempt, 30)
+        return min(2**attempt, 30)
 
     async def get(self, *args, **kwargs) -> Response:
         """

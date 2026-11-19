@@ -1,4 +1,5 @@
 """Shared helpers for API resources with offset pagination."""
+
 from .iterators import AsyncPaginator
 
 
@@ -18,12 +19,16 @@ def paginate(client, path, key, page_size=50, *, transform=None, **params):
         total = data.get("total")
         if total is None:
             total = offset + len(items) + (1 if len(items) >= page_size else 0)
-        return {"items": [transform(item) for item in items] if transform else items,
-                "total": total}
+        return {
+            "items": [transform(item) for item in items] if transform else items,
+            "total": total,
+        }
 
     return AsyncPaginator(fetch)
 
 
 async def get_json(client, path, **params):
-    response = await client.requests.get(client.url_generator.get_url(path), params=params)
+    response = await client.requests.get(
+        client.url_generator.get_url(path), params=params
+    )
     return response.json()

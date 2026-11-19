@@ -11,9 +11,12 @@ class BulkPresenceTests(unittest.IsolatedAsyncioTestCase):
         def handler(request):
             ids = request.url.params["ids"]
             calls.append(ids)
-            return httpx.Response(200, json={"presence": [
-                {"user_id": int(ids.split(",")[0]), "state": "online"}
-            ]})
+            return httpx.Response(
+                200,
+                json={
+                    "presence": [{"user_id": int(ids.split(",")[0]), "state": "online"}]
+                },
+            )
 
         async with Client() as client:
             await client.requests.session.aclose()

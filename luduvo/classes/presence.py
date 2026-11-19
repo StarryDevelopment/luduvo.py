@@ -1,4 +1,5 @@
 """User presence snapshots."""
+
 from dataclasses import dataclass
 
 
@@ -11,5 +12,9 @@ class Presence:
 
     @classmethod
     def from_api(cls, data: dict, user_id: int | None = None) -> "Presence":
-        return cls(data["user_id"] if user_id is None else user_id,
-                   data["state"], data.get("online"), data.get("joinable"))
+        return cls(
+            data["user_id"] if user_id is None else user_id,
+            data["state"],
+            data.get("online"),
+            data.get("joinable"),
+        )

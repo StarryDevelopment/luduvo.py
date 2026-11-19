@@ -9,15 +9,26 @@ class GroupAPITests(unittest.IsolatedAsyncioTestCase):
         def handler(request):
             if request.url.path == "/me/groups/1/metrics":
                 self.assertEqual(request.url.params["range"], "28d")
-                return httpx.Response(200, json={
-                    "group_id": 1, "range": {}, "previous_range": {},
-                    "freshness": {}, "visits": {"current": 12, "previous": 10},
-                    "suppression_threshold": 10,
-                })
+                return httpx.Response(
+                    200,
+                    json={
+                        "group_id": 1,
+                        "range": {},
+                        "previous_range": {},
+                        "freshness": {},
+                        "visits": {"current": 12, "previous": 10},
+                        "suppression_threshold": 10,
+                    },
+                )
             self.assertEqual(request.url.path, "/users/2/presence")
-            return httpx.Response(200, json={
-                "online": True, "state": "online", "joinable": False,
-            })
+            return httpx.Response(
+                200,
+                json={
+                    "online": True,
+                    "state": "online",
+                    "joinable": False,
+                },
+            )
 
         async with Client() as client:
             await client.requests.session.aclose()

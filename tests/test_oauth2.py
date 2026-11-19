@@ -21,13 +21,20 @@ class OAuthTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(request.headers["Authorization"], "Bearer test-token")
             return httpx.Response(200, json={"id": 7, "sub": "7", "username": "test"})
 
-        async with OAuth2Client("app", "https://example.org/callback",
-                                transport=httpx.MockTransport(handler)) as client:
+        async with OAuth2Client(
+            "app",
+            "https://example.org/callback",
+            transport=httpx.MockTransport(handler),
+        ) as client:
             auth = client.authorize()
             query = parse_qs(urlsplit(auth.url).query)
-            expected = base64.urlsafe_b64encode(
-                hashlib.sha256(auth.verifier.encode()).digest()
-            ).rstrip(b"=").decode()
+            expected = (
+                base64.urlsafe_b64encode(
+                    hashlib.sha256(auth.verifier.encode()).digest()
+                )
+                .rstrip(b"=")
+                .decode()
+            )
             self.assertEqual(query["code_challenge"], [expected])
             with self.assertRaises(OAuth2Error):
                 await client.exchange("code", "wrong", auth)

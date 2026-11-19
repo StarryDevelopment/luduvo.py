@@ -28,8 +28,17 @@ class Client:
         authenticated: Whether the client is currently authenticated.
     """
 
-    def __init__(self, *, base_url="luduvo.com", token=None, refresh_token=None,
-                 timeout=15.0, max_concurrency=4, max_retries=2, max_retry_after=60.0):
+    def __init__(
+        self,
+        *,
+        base_url="luduvo.com",
+        token=None,
+        refresh_token=None,
+        timeout=15.0,
+        max_concurrency=4,
+        max_retries=2,
+        max_retry_after=60.0,
+    ):
         """
         Initialize a Luduvo Client instance.
 
@@ -47,10 +56,15 @@ class Client:
 
         self._url_generator: URLGenerator = URLGenerator(base_url=base_url)
 
-        self._requests = Requests(base_url=base_url, token=token, refresh_token=refresh_token,
-                                  timeout=timeout,
-                                  max_concurrency=max_concurrency, max_retries=max_retries,
-                                  max_retry_after=max_retry_after)
+        self._requests = Requests(
+            base_url=base_url,
+            token=token,
+            refresh_token=refresh_token,
+            timeout=timeout,
+            max_concurrency=max_concurrency,
+            max_retries=max_retries,
+            max_retry_after=max_retry_after,
+        )
         self.url_generator = self._url_generator
         self.requests = self._requests
 
@@ -260,8 +274,10 @@ class Client:
                 params={**params, "limit": page_size, "offset": offset},
             )
             data = response.json()
-            return {"items": [Group(self, item) for item in data["groups"]],
-                    "total": data["total"]}
+            return {
+                "items": [Group(self, item) for item in data["groups"]],
+                "total": data["total"],
+            }
 
         return AsyncPaginator(fetch_page)
 
@@ -281,8 +297,14 @@ class Client:
         return await self.get_partial_user(user_id).get_presence()
 
     def search_users(self, query: str, page_size: int = 50):
-        return paginate(self, "users", "users", page_size, q=query,
-                        transform=lambda data: UserSearchResult(self, data))
+        return paginate(
+            self,
+            "users",
+            "users",
+            page_size,
+            q=query,
+            transform=lambda data: UserSearchResult(self, data),
+        )
 
     def search_places(self, query: str, page_size: int = 50, *, sort=None):
         params = {"q": query}
@@ -291,8 +313,9 @@ class Client:
         return paginate(self, "places", "places", page_size, **params)
 
     def search_store(self, page_size: int = 50, *, sort=None, made_by=None):
-        params = {k: v for k, v in {"sort": sort, "made_by": made_by}.items()
-                  if v is not None}
+        params = {
+            k: v for k, v in {"sort": sort, "made_by": made_by}.items() if v is not None
+        }
         return paginate(self, "store", "items", page_size, **params)
 
     async def get_store_item(self, item_id: int):
@@ -308,8 +331,13 @@ class Client:
         return paginate(self, "me/inventory", "items", page_size)
 
     def my_friends(self, page_size: int = 50):
-        return paginate(self, "me/friends", "friends", page_size,
-                        transform=lambda data: Friend(client=self, data=data))
+        return paginate(
+            self,
+            "me/friends",
+            "friends",
+            page_size,
+            transform=lambda data: Friend(client=self, data=data),
+        )
 
     def pending_friends(self, page_size: int = 50):
         return paginate(self, "me/friends/pending", "requests", page_size)
@@ -332,7 +360,9 @@ class Client:
     async def conversation_messages(self, conversation_id: int, *, limit: int = 50):
         if limit <= 0:
             raise ValueError("limit must be positive")
-        return await get_json(self, f"conversations/{conversation_id}/messages", limit=limit)
+        return await get_json(
+            self, f"conversations/{conversation_id}/messages", limit=limit
+        )
 
     async def trade_counts(self):
         return await get_json(self, "me/trades/counts")
@@ -355,9 +385,8 @@ class Client:
         ids = list(dict.fromkeys(int(user_id) for user_id in user_ids))
         result = []
         for offset in range(0, len(ids), batch_size):
-            batch = ids[offset:offset + batch_size]
-            data = await get_json(self, "users/presence",
-                                  ids=",".join(map(str, batch)))
+            batch = ids[offset : offset + batch_size]
+            data = await get_json(self, "users/presence", ids=",".join(map(str, batch)))
             result.extend(Presence.from_api(item) for item in data["presence"])
         return result
 

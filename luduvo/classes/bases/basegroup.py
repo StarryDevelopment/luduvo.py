@@ -49,7 +49,9 @@ class BaseGroup(BaseItem):
         )
         return GroupMetrics.from_api(response.json())
 
-    def _paginate(self, resource: str, key: str, page_size: int) -> AsyncPaginator[dict]:
+    def _paginate(
+        self, resource: str, key: str, page_size: int
+    ) -> AsyncPaginator[dict]:
         if page_size <= 0:
             raise ValueError("page_size must be positive")
 
@@ -84,11 +86,15 @@ class BaseGroup(BaseItem):
         return paginate(self._client, f"groups/{self.id}/funds", "entries", page_size)
 
     async def get_funds_balance(self) -> int:
-        data = await get_json(self._client, f"groups/{self.id}/funds", limit=1, offset=0)
+        data = await get_json(
+            self._client, f"groups/{self.id}/funds", limit=1, offset=0
+        )
         return data["balance_earned"]
 
     async def pending_transfer(self):
-        return (await get_json(self._client, f"groups/{self.id}/transfer/pending"))["pending"]
+        return (await get_json(self._client, f"groups/{self.id}/transfer/pending"))[
+            "pending"
+        ]
 
     async def post_wall(self, content: str, *, announcement: bool = False):
         """Publish a group wall post using the authenticated account."""

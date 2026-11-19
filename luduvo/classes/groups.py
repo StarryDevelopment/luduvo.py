@@ -46,7 +46,8 @@ class Group(BaseGroup):
         self.my_permissions: int | None = data.get("my_permissions")
         self.my_roles: list[GroupRole] | None = (
             [GroupRole.from_api(role) for role in data["my_roles"]]
-            if data.get("my_roles") is not None else None
+            if data.get("my_roles") is not None
+            else None
         )
         self.banner_url: str | None = data.get("banner_url")
         self.owner_display_name: str | None = data.get("owner_display_name")

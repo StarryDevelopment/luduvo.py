@@ -15,14 +15,23 @@ class RegressionTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(request.url.host, "api.example.test")
             if request.url.path == "/auth/refresh":
                 import json
-                self.assertEqual(json.loads(request.content), {"refresh_token": "old-refresh"})
-                return httpx.Response(200, json={"token": "new-token", "refresh_token": "new-refresh"})
+
+                self.assertEqual(
+                    json.loads(request.content), {"refresh_token": "old-refresh"}
+                )
+                return httpx.Response(
+                    200, json={"token": "new-token", "refresh_token": "new-refresh"}
+                )
             self.assertEqual(request.headers["Authorization"], "Bearer new-token")
             return httpx.Response(200, json={})
 
         session = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-        requests = Requests(token="old-token", refresh_token="old-refresh",
-                            session=session, base_url="example.test")
+        requests = Requests(
+            token="old-token",
+            refresh_token="old-refresh",
+            session=session,
+            base_url="example.test",
+        )
         try:
             tokens = await requests.refresh()
             self.assertEqual(tokens.refresh_token, "new-refresh")

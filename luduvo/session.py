@@ -1,4 +1,5 @@
 """Account session credentials. Never log or persist these in plaintext."""
+
 from dataclasses import dataclass, field
 
 
