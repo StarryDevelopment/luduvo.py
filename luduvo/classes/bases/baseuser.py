@@ -12,10 +12,12 @@ from .baseitem import BaseItem
 from ...utilities.iterators import AsyncPaginator
 from ..presence import Presence
 from ...utilities.resources import paginate
+from ...models import JSONObject
 
 if TYPE_CHECKING:
     from ...client import Client
     from ..friends import Friend
+    from ..groups import Group
 
 
 class BaseUser(BaseItem):
@@ -42,17 +44,17 @@ class BaseUser(BaseItem):
         )
         return Presence.from_api(response.json(), self.id)
 
-    def groups(self, page_size: int = 50) -> AsyncPaginator:
+    def groups(self, page_size: int = 50) -> AsyncPaginator[Group]:
         """Iterate the groups this user belongs to."""
         return self.client._groups(f"users/{self.id}/groups", page_size)
 
-    def usernames(self, page_size: int = 50):
+    def usernames(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return paginate(self.client, f"users/{self.id}/usernames", "items", page_size)
 
-    def places(self, page_size: int = 50):
+    def places(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return paginate(self.client, f"users/{self.id}/places", "places", page_size)
 
-    def inventory(self, page_size: int = 50):
+    def inventory(self, page_size: int = 50) -> AsyncPaginator[JSONObject]:
         return paginate(self.client, f"users/{self.id}/inventory", "items", page_size)
 
     async def get_full_body_url(self) -> str | None:
@@ -91,25 +93,8 @@ class BaseUser(BaseItem):
 
         from ..friends import Friend
 
-        async def fetch_page(offset: int):
-            response = await self.client._requests.get(
-                url=self.client.url_generator.get_url(
-                    f"users/{self.id}/friends", "api"
-                ),
-                params={"limit": page_size, "offset": offset},
-            )
-
-            response.raise_for_status()
-            data = response.json()
-
-            return {
-                "items": [
-                    Friend(client=self.client, data=f) for f in data.get("friends", [])
-                ],
-                "total": data.get("total", 0),
-            }
-
-        return AsyncPaginator(fetch_page)
+        return paginate(self.client, f"users/{self.id}/friends", "friends",
+                        page_size, transform=lambda data: Friend(client=self.client, data=data))
 
     async def get_headshot_url(self) -> str | None:
         """Gets the user's headshot url.
@@ -128,3 +113,9 @@ class BaseUser(BaseItem):
             return url
         except Exception:
             return None
+
+    iter_groups = groups
+    iter_usernames = usernames
+    iter_places = places
+    iter_inventory = inventory
+    iter_friends = friends

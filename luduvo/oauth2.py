@@ -1,7 +1,7 @@
 """Experimental OAuth2 authorization-code integration for Luduvo.
 
-The endpoint contract is based on community documentation, not a verified
-official specification. Keep OAuth tokens separate from account credentials.
+The authorization-code flow has been smoke-tested against the live API.
+This is not an official specification. Keep OAuth tokens separate from account credentials.
 """
 
 import base64
@@ -48,16 +48,10 @@ class OAuthUser:
 class OAuth2Client:
     """Independent async OAuth client; state storage belongs to the application."""
 
-    def __init__(
-        self,
-        client_id: str,
-        redirect_uri: str,
-        *,
-        client_secret: str | None = None,
-        timeout: float = 15,
-        authorization_url: str = "https://luduvo.com/oauth/authorize",
-        transport: httpx.AsyncBaseTransport | None = None,
-    ):
+    def __init__(self, client_id: str, redirect_uri: str, *,
+                 client_secret: str | None = None, timeout: float = 15,
+                 authorization_url: str = "https://api.luduvo.com/oauth/authorize",
+                 transport: httpx.AsyncBaseTransport | None = None):
         self.client_id = client_id
         self.redirect_uri = redirect_uri
         self._client_secret = client_secret

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Any
+from ..models import JSONObject, MetricRange, MetricFreshness, MembersByRole
 
 
 @dataclass(frozen=True)
@@ -18,17 +19,17 @@ class MetricComparison:
 @dataclass(frozen=True)
 class GroupMetrics:
     group_id: int
-    range: dict
+    range: MetricRange
     previous_range: dict
-    freshness: dict
+    freshness: MetricFreshness
     data_through_day: int | None
     places: int | None
     live_ccu: int | None
     visits: MetricComparison
     unique_players: MetricComparison
     playtime_hours: MetricComparison
-    member_joins_by_day: list[dict]
-    members_by_role: list[dict]
+    member_joins_by_day: list[JSONObject]
+    members_by_role: list[MembersByRole]
     store_revenue_by_item: list[dict]
     ledger_by_type: list[dict]
     payouts_by_role: list[dict]

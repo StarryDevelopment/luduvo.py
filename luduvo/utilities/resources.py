@@ -1,6 +1,19 @@
 """Shared helpers for API resources with offset pagination."""
-
+from __future__ import annotations
+from typing import TYPE_CHECKING, Callable, TypeVar, overload
 from .iterators import AsyncPaginator
+from ..models import JSONObject, JSONValue
+
+if TYPE_CHECKING:
+    from ..client import Client
+
+T = TypeVar('T')
+
+
+@overload
+def paginate(client: Client, path: str, key: str, page_size: int = 50, *, transform: None = None, **params: str | int) -> AsyncPaginator[JSONObject]: ...
+@overload
+def paginate(client: Client, path: str, key: str, page_size: int = 50, *, transform: Callable[[JSONObject], T], **params: str | int) -> AsyncPaginator[T]: ...
 
 
 def paginate(client, path, key, page_size=50, *, transform=None, **params):
@@ -27,8 +40,13 @@ def paginate(client, path, key, page_size=50, *, transform=None, **params):
     return AsyncPaginator(fetch)
 
 
+<<<<<<< HEAD
 async def get_json(client, path, **params):
     response = await client.requests.get(
         client.url_generator.get_url(path), params=params
     )
+=======
+async def get_json(client: Client, path: str, **params: str | int) -> JSONValue:
+    response = await client.requests.get(client.url_generator.get_url(path), params=params)
+>>>>>>> 422f00ed286d5e82c16e254b4216134daf7ef521
     return response.json()

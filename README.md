@@ -47,3 +47,5 @@ async with luduvo.Client(token=access_token, refresh_token=refresh_token) as cli
 Keep credentials in protected storage; never log them. OAuth2 identity
 verification uses the separate OAuth2Client. Token refresh requires a valid
 refresh token and is subject to the platform's authorization policy.
+
+See the [usage guide](https://starrydevelopment.github.io/luduvo.py/usage/) and [migration guide](https://starrydevelopment.github.io/luduvo.py/migration/) for typed responses and preferred method names.
