@@ -34,3 +34,24 @@ class ResourceTests(unittest.IsolatedAsyncioTestCase):
                 )
             )
             self.assertEqual(await client.my_inventory().flatten(), [])
+
+    async def test_store_search_and_legacy_listing(self):
+        def handler(request):
+            self.assertEqual(request.url.path, "/store")
+            self.assertEqual(request.url.params["limit"], "2")
+            if "q" in request.url.params:
+                self.assertEqual(request.url.params["q"], "red hat")
+                self.assertEqual(request.url.params["sort"], "recent")
+                self.assertEqual(request.url.params["made_by"], "42")
+            return httpx.Response(200, json={"items": [{"id": 7}], "total": 1})
+
+        async with Client() as client:
+            await client.requests.session.aclose()
+            client.requests.session = httpx.AsyncClient(
+                transport=httpx.MockTransport(handler)
+            )
+            result = await client.search_store(
+                page_size=2, query="red hat", sort="recent", made_by=42
+            ).flatten()
+            self.assertEqual(result, [{"id": 7}])
+            self.assertEqual(await client.search_store(2).flatten(), [{"id": 7}])

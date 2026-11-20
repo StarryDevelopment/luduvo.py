@@ -325,9 +325,13 @@ class Client:
         *,
         sort: str | None = None,
         made_by: str | int | None = None,
+        query: str | None = None,
     ) -> AsyncPaginator[JSONObject]:
+        """Search Marketplace items by text, or list items when query is omitted."""
         params = {
-            k: v for k, v in {"sort": sort, "made_by": made_by}.items() if v is not None
+            k: v
+            for k, v in {"q": query, "sort": sort, "made_by": made_by}.items()
+            if v is not None
         }
         return paginate(self, "store", "items", page_size, **params)
 

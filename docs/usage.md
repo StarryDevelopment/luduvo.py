@@ -22,6 +22,18 @@ and `search_*` for searches. Existing names remain supported.
 Paginators support async iteration, `limit(n)`, `first()` and `flatten()`.
 The limit mutates the paginator; construct a new paginator for independent queries.
 
+### Marketplace search
+
+```python
+async for item in client.search_store(query="hat", page_size=25).limit(25):
+    print(item)
+item = await client.get_store_item(item_id)
+variants = await client.get_item_variants(item_id)
+```
+
+The optional query is sent as the API's `q` parameter, consistent with other
+search methods. Existing `search_store(page_size)` calls still list items.
+
 ## Authorized sessions
 
 Use only authorized sessions provided through supported platform mechanisms.
