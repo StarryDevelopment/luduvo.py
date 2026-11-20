@@ -78,3 +78,23 @@ class ResourceTests(unittest.IsolatedAsyncioTestCase):
             self.assertIsInstance(variants[0], ItemVariant)
             self.assertEqual(variants[0].color, "Blue")
             self.assertEqual(variants[0].item_id, 42)
+
+    def test_marketplace_wire_fields(self):
+        item = Item(None, {"id": 1668, "is_on_sale": 1, "is_limited": 1,
+            "has_variants": 0, "asset_type": "face", "rap": 641,
+            "limited_quantity": 200, "limited_sold": 0, "owners_count": 145,
+            "lowest_resell_price": 1500, "sales_count": 200})
+        self.assertIs(item.is_limited, True)
+        self.assertIs(item.on_sale, True)
+        self.assertIs(item.has_variants, False)
+        self.assertEqual(item.rap, 641)
+        self.assertEqual(item.limited_quantity, 200)
+        self.assertEqual(item.limited_sold, 0)
+        self.assertEqual(item.sales, 200)
+        self.assertEqual(item.category, "face")
+        variant = ItemVariant(None, {"variant_index": 2, "hex_code": "#212121",
+            "is_on_sale": True, "price": 0, "thumbnail_key": "item_previews/1721/v2/test.png"}, 1721)
+        self.assertEqual(variant.id, 2)
+        self.assertEqual(variant.color, "#212121")
+        self.assertIs(variant.on_sale, True)
+        self.assertEqual(variant.thumbnail_url, "https://assets.luduvo.com/item_previews/1721/v2/test.png")

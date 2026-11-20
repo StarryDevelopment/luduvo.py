@@ -34,7 +34,11 @@ def _integer(value: JSONValue) -> int | None:
 
 
 def _boolean(value: JSONValue) -> bool | None:
-    return value if isinstance(value, bool) else None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) and value in (0, 1):
+        return bool(value)
+    return None
 
 
 def _label(value: JSONValue) -> str | None:
@@ -50,12 +54,21 @@ class ItemVariant:
         self._client = client
         self._data = dict(data)
         self.item_id: int = item_id
-        self.id: int | None = _integer(_field(data, "id", "variant_id"))
+        self.variant_index: int | None = _integer(_field(data, "variant_index", "variant_id", "id"))
+        self.id: int | None = self.variant_index
         self.name: str | None = _label(_field(data, "name", "title", "color_name", "colour_name"))
-        self.color: str | None = _label(_field(data, "color", "colour", "color_hex", "hex"))
+        self.color: str | None = _label(_field(data, "hex_code", "color", "colour", "color_hex", "hex"))
+        self.hex_code: str | None = _text(data.get("hex_code"))
         self.price: int | float | None = _number(data.get("price"))
+        self.thumbnail_key: str | None = _text(data.get("thumbnail_key"))
         self.thumbnail_url: str | None = _text(_field(data, "thumbnail_url", "icon_url", "image_url"))
-        self.on_sale: bool | None = _boolean(_field(data, "on_sale", "is_for_sale", "for_sale"))
+        self.on_sale: bool | None = _boolean(_field(data, "is_on_sale", "on_sale", "is_for_sale", "for_sale"))
+        self.is_on_sale: bool | None = self.on_sale
+        if not self.thumbnail_url and self.thumbnail_key:
+            from urllib.parse import quote
+            parts = self.thumbnail_key.split("/")
+            if self.thumbnail_key.startswith("item_previews/") and all(part not in ("", ".", "..") for part in parts):
+                self.thumbnail_url = "https://assets.luduvo.com/" + quote(self.thumbnail_key, safe="/")
 
     @property
     def raw(self) -> JSONObject:
@@ -82,9 +95,22 @@ class Item(BaseItem):
         self.sales: int | None = _integer(_field(data, "sales", "sale_count", "sales_count"))
         self.creator_username: str | None = _label(_field(data, "creator_username", "owner_username", "creator", "made_by"))
         self.creator_id: int | None = _integer(_field(data, "creator_id", "owner_id"))
-        self.category: str | None = _label(_field(data, "category_name", "category", "type"))
+        self.asset_type: str | None = _text(data.get("asset_type"))
+        self.slot: str | None = _text(data.get("slot"))
+        self.category: str | None = _label(_field(data, "asset_type", "category_name", "category", "type"))
         self.on_sale: bool | None = _boolean(_field(data, "on_sale", "is_for_sale", "for_sale"))
         self.is_limited: bool | None = _boolean(_field(data, "is_limited", "limited"))
+        self.has_variants: bool | None = _boolean(data.get("has_variants"))
+        self.rap: int | None = _integer(data.get("rap"))
+        self.lowest_resell_price: int | None = _integer(data.get("lowest_resell_price"))
+        self.limited_quantity: int | None = _integer(data.get("limited_quantity"))
+        self.limited_sold: int | None = _integer(data.get("limited_sold"))
+        self.owners_count: int | None = _integer(data.get("owners_count"))
+        self.thumbs_up: int | None = _integer(data.get("thumbs_up"))
+        self.thumbs_down: int | None = _integer(data.get("thumbs_down"))
+        self.expires_at: int | None = _integer(data.get("expires_at"))
+        self.status: str | None = _text(data.get("status"))
+        self.model_url: str | None = _text(data.get("model_url"))
         self.thumbnail_url: str | None = _text(_field(data, "thumbnail_url", "icon_url", "image_url"))
         self.created_at: int | float | None = _number(data.get("created_at"))
         self.updated_at: int | float | None = _number(data.get("updated_at"))
