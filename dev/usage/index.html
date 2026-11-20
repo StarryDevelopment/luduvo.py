@@ -969,6 +969,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/classes/items/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    items
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/classes/members/" class="md-nav__link">
         
   
@@ -1008,7 +1036,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_8" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -1030,14 +1058,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4_1_7" id="__nav_4_1_7_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4_1_8" id="__nav_4_1_8_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_1_7">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1705,10 +1733,15 @@ Paginators support async iteration, <code>limit(n)</code>, <code>first()</code> 
 The limit mutates the paginator; construct a new paginator for independent queries.</p>
 <h3 id="marketplace-search">Marketplace search<a class="headerlink" href="#marketplace-search" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">search_store</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">"hat"</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">25</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
 <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get_store_item</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
-<span class="n">variants</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get_item_variants</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+<span class="n">variants</span> <span class="o">=</span> <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">get_variants</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">variant</span> <span class="ow">in</span> <span class="n">variants</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">variant</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">variant</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">variant</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
 </code></pre></div>
+<p>Marketplace search and detail methods now return Item objects; variants return
+ItemVariant objects. Use .raw for unmodeled fields or migration from dictionaries.
+Absent or unrecognized optional fields are None. Inventory remains raw JSON.</p>
 <p>The optional query is sent as the API's <code>q</code> parameter, consistent with other
 search methods. Existing <code>search_store(page_size)</code> calls still list items.</p>
 <h2 id="authorized-sessions">Authorized sessions<a class="headerlink" href="#authorized-sessions" title="Permanent link">&para;</a></h2>
