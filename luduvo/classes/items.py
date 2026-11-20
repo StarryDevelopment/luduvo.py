@@ -98,7 +98,8 @@ class Item(BaseItem):
         self.asset_type: str | None = _text(data.get("asset_type"))
         self.slot: str | None = _text(data.get("slot"))
         self.category: str | None = _label(_field(data, "asset_type", "category_name", "category", "type"))
-        self.on_sale: bool | None = _boolean(_field(data, "on_sale", "is_for_sale", "for_sale"))
+        self.on_sale: bool | None = _boolean(_field(data, "is_on_sale", "on_sale", "is_for_sale", "for_sale"))
+        self.is_on_sale: bool | None = self.on_sale
         self.is_limited: bool | None = _boolean(_field(data, "is_limited", "limited"))
         self.has_variants: bool | None = _boolean(data.get("has_variants"))
         self.rap: int | None = _integer(data.get("rap"))
