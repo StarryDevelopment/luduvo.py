@@ -13,3 +13,5 @@ from .presence import Presence  # noqa: F401
 from .group_metrics import GroupMetrics, MetricComparison  # noqa: F401
 
 from .search import UserSearchResult  # noqa: F401
+
+from .items import Item, ItemVariant  # noqa: F401

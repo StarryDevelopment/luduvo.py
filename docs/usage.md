@@ -26,10 +26,16 @@ The limit mutates the paginator; construct a new paginator for independent queri
 
 ```python
 async for item in client.search_store(query="hat", page_size=25).limit(25):
-    print(item)
+    print(item.id, item.name, item.price)
 item = await client.get_store_item(item_id)
-variants = await client.get_item_variants(item_id)
+variants = await item.get_variants()
+for variant in variants:
+    print(variant.name, variant.color, variant.price)
 ```
+
+Marketplace search and detail methods now return Item objects; variants return
+ItemVariant objects. Use .raw for unmodeled fields or migration from dictionaries.
+Absent or unrecognized optional fields are None. Inventory remains raw JSON.
 
 The optional query is sent as the API's `q` parameter, consistent with other
 search methods. Existing `search_store(page_size)` calls still list items.

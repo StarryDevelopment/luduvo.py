@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from .models import JSONObject, JSONValue, TradeKind
 from .utilities.resources import paginate, get_json
 from .classes.search import UserSearchResult
+from .classes.items import Item, ItemVariant
 from .classes.friends import Friend
 from .classes import User, Place, Group, BaseGroup, BaseUser, Presence
 from .utilities.iterators import AsyncPaginator
@@ -326,20 +327,21 @@ class Client:
         sort: str | None = None,
         made_by: str | int | None = None,
         query: str | None = None,
-    ) -> AsyncPaginator[JSONObject]:
+    ) -> AsyncPaginator[Item]:
         """Search Marketplace items by text, or list items when query is omitted."""
         params = {
             k: v
             for k, v in {"q": query, "sort": sort, "made_by": made_by}.items()
             if v is not None
         }
-        return paginate(self, "store", "items", page_size, **params)
+        return paginate(self, "store", "items", page_size, transform=lambda data: Item(self, data), **params)
 
-    async def get_store_item(self, item_id: int) -> JSONObject:
-        return await get_json(self, f"store/{item_id}")
+    async def get_store_item(self, item_id: int) -> Item:
+        return Item(self, await get_json(self, f"store/{item_id}"), item_id=item_id)
 
-    async def get_item_variants(self, item_id: int) -> list[JSONValue]:
-        return (await get_json(self, f"items/{item_id}/variants"))["variants"]
+    async def get_item_variants(self, item_id: int) -> list[ItemVariant]:
+        data = await get_json(self, f"items/{item_id}/variants")
+        return [ItemVariant(self, variant, item_id) for variant in data["variants"]]
 
     async def get_store_categories(self) -> list[JSONValue]:
         return await get_json(self, "store/categories")
