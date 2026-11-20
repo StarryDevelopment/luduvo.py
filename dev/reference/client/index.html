@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/logo.svg">
-      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.8.2">
     
     
       
@@ -1262,6 +1262,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#luduvo.client.Client.search_store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search_store
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1740,6 +1751,17 @@
     <span class="md-ellipsis">
       
         get_user_by_username
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#luduvo.client.Client.search_store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search_store
       
     </span>
   </a>
@@ -2319,7 +2341,11 @@ resources such as users, places, and groups.</p>
 <span class="normal">461</span>
 <span class="normal">462</span>
 <span class="normal">463</span>
-<span class="normal">464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Client</span><span class="p">:</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Client</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Represents a Luduvo API client.</span>
 
 <span class="sd">    This class is the main entry point for interacting with the Luduvo API.</span>
@@ -2627,9 +2653,13 @@ resources such as users, places, and groups.</p>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">sort</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">made_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncPaginator</span><span class="p">[</span><span class="n">JSONObject</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Search Marketplace items by text, or list items when query is omitted."""</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"sort"</span><span class="p">:</span> <span class="n">sort</span><span class="p">,</span> <span class="s2">"made_by"</span><span class="p">:</span> <span class="n">made_by</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"q"</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="s2">"sort"</span><span class="p">:</span> <span class="n">sort</span><span class="p">,</span> <span class="s2">"made_by"</span><span class="p">:</span> <span class="n">made_by</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">paginate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">,</span> <span class="s2">"items"</span><span class="p">,</span> <span class="n">page_size</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
 
@@ -3034,11 +3064,11 @@ resources such as users, places, and groups.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>luduvo/client.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Close the underlying HTTP session used by the client.</span>
 <span class="sd">    """</span>
@@ -3577,11 +3607,7 @@ resources such as users, places, and groups.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>luduvo/client.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">398</span>
-<span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
 <span class="normal">405</span>
@@ -3589,7 +3615,11 @@ resources such as users, places, and groups.</p>
 <span class="normal">407</span>
 <span class="normal">408</span>
 <span class="normal">409</span>
-<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_presences</span><span class="p">(</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_presences</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">user_ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Presence</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Fetch presence in batches; missing users are not treated as offline."""</span>
@@ -3979,6 +4009,57 @@ Defaults to True. This parameter is ignored as of v1.2.0 and will always return 
         <span class="k">raise</span> <span class="n">UserNotFound</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">"Invalid user."</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">User</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">user_data</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="luduvo.client.Client.search_store" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">search_store</span><span class="p">(</span><span class="n">page_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">made_by</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#luduvo.client.Client.search_store" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Search Marketplace items by text, or list items when query is omitted.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>luduvo/client.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">search_store</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">sort</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">made_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncPaginator</span><span class="p">[</span><span class="n">JSONObject</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Search Marketplace items by text, or list items when query is omitted."""</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"q"</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="s2">"sort"</span><span class="p">:</span> <span class="n">sort</span><span class="p">,</span> <span class="s2">"made_by"</span><span class="p">:</span> <span class="n">made_by</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">paginate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">,</span> <span class="s2">"items"</span><span class="p">,</span> <span class="n">page_size</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

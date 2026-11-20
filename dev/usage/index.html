@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/logo.svg">
-      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.8.2">
     
     
       
@@ -456,6 +456,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Public resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#marketplace-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Marketplace search
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1573,6 +1590,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Public resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#marketplace-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Marketplace search
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1669,6 +1703,14 @@
 and <code>search_*</code> for searches. Existing names remain supported.
 Paginators support async iteration, <code>limit(n)</code>, <code>first()</code> and <code>flatten()</code>.
 The limit mutates the paginator; construct a new paginator for independent queries.</p>
+<h3 id="marketplace-search">Marketplace search<a class="headerlink" href="#marketplace-search" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">search_store</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">"hat"</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">25</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get_store_item</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+<span class="n">variants</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get_item_variants</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+</code></pre></div>
+<p>The optional query is sent as the API's <code>q</code> parameter, consistent with other
+search methods. Existing <code>search_store(page_size)</code> calls still list items.</p>
 <h2 id="authorized-sessions">Authorized sessions<a class="headerlink" href="#authorized-sessions" title="Permanent link">&para;</a></h2>
 <p>Use only authorized sessions provided through supported platform mechanisms.
 Pass <code>token</code> and optionally <code>refresh_token</code> to Client. Password login is
